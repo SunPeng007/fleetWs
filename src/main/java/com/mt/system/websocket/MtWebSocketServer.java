@@ -25,7 +25,7 @@ import java.util.concurrent.CopyOnWriteArraySet;
  * 使用websocket的核心，就是一系列的websocket注解，@ServerEndpoint是注册在类上面开启。
  */
 @Component
-@ServerEndpoint(value = "/mtwebsocket/${sourceType}/${userToken}")
+@ServerEndpoint(value = "/mtwebsocket/${serialNumber}")
 public class MtWebSocketServer {
     private static Logger logger = LoggerFactory.getLogger(MtWebSocketServer.class);
     //静态变量，用来记录当前在线连接数。应该把它设计成线程安全的。
@@ -36,9 +36,7 @@ public class MtWebSocketServer {
     //与某个客户端的连接会话，需要通过它来给客户端发送数据
     private Session session;
 
-    private String sourceType;
-
-    private String userToken;
+    private String serialNumber;
 
     /**
      * 连接建立成功调用的方法
