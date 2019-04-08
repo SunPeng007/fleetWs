@@ -25,22 +25,29 @@ import java.util.concurrent.CopyOnWriteArraySet;
  * 使用websocket的核心，就是一系列的websocket注解，@ServerEndpoint是注册在类上面开启。
  */
 @Component
-@ServerEndpoint(value = "/synergy/websocket")
-public class SynergyWebSocketServer {
-    private static Logger logger = LoggerFactory.getLogger(SynergyWebSocketServer.class);
+@ServerEndpoint(value = "/mtwebsocket/${sourceType}/${userToken}")
+public class MtWebSocketServer {
+    private static Logger logger = LoggerFactory.getLogger(MtWebSocketServer.class);
     //静态变量，用来记录当前在线连接数。应该把它设计成线程安全的。
     private static int onlineCount = 0;
     //concurrent包的线程安全Set，用来存放每个客户端对应的MyWebSocket对象。
-    private static CopyOnWriteArraySet<SynergyWebSocketServer> webSocketSet = new CopyOnWriteArraySet<SynergyWebSocketServer>();
+    private static CopyOnWriteArraySet<MtWebSocketServer> webSocketSet = new CopyOnWriteArraySet<MtWebSocketServer>();
 
     //与某个客户端的连接会话，需要通过它来给客户端发送数据
     private Session session;
+
+    private String sourceType;
+
+    private String userToken;
 
     /**
      * 连接建立成功调用的方法
      */
     @OnOpen
     public void onOpen(Session session) {
+        //判断该用户是否已经连接
+
+
         this.session = session;
         webSocketSet.add(this);     //加入set中
         addOnlineCount();           //在线数加1
@@ -48,6 +55,7 @@ public class SynergyWebSocketServer {
         try {
             sendMessage("连接成功");
         } catch (IOException e) {
+            e.printStackTrace();
             logger.error("websocket IO异常");
         }
     }
@@ -72,12 +80,18 @@ public class SynergyWebSocketServer {
         //站点添加聊天记录-URL
         String webUrl=jsonMap.get("webUrl").toString();
         jsonMap.remove("webUrl");
+        //群id:groupId
+        //发送人Id：senderId
+        //记录类型:1文字，2图片，3语音，4短视频 ： contentType
+        //记录内容 :content
+        //图片小图：smallImg
+        //发送时间:格式：yyyy年MM月dd日 时:分 : sendTime
         JSONObject resultJson = HttpClientTool.mtHttpPost(jsonMap,webUrl+AsyncUrlConstant.SYNERGY_GROUP_RECORD_URL);
         if (resultJson == null) {
             throw new IllegalArgumentException("同步数据失败!");
         }
         //群发消息
-        for (SynergyWebSocketServer item : webSocketSet) {
+        for (MtWebSocketServer item : webSocketSet) {
             try {
                 item.sendMessage(message);
             } catch (IOException e) {
@@ -92,6 +106,7 @@ public class SynergyWebSocketServer {
      */
     @OnError
     public void onError(Session session, Throwable error) {
+        error.printStackTrace();
         logger.error("发生错误");
         error.printStackTrace();
     }
@@ -104,7 +119,7 @@ public class SynergyWebSocketServer {
      * */
     public static void sendInfo(String message) throws IOException {
         logger.info(message);
-        for (SynergyWebSocketServer item : webSocketSet) {
+        for (MtWebSocketServer item : webSocketSet) {
             try {
                 item.sendMessage(message);
             } catch (IOException e) {
@@ -118,10 +133,10 @@ public class SynergyWebSocketServer {
     }
 
     public static synchronized void addOnlineCount() {
-        SynergyWebSocketServer.onlineCount++;
+        MtWebSocketServer.onlineCount++;
     }
 
     public static synchronized void subOnlineCount() {
-        SynergyWebSocketServer.onlineCount--;
+        MtWebSocketServer.onlineCount--;
     }
 }
