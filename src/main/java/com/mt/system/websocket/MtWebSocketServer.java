@@ -1,17 +1,14 @@
 package com.mt.system.websocket;
 
-import com.mt.system.common.code.HttpClientTool;
-import com.mt.system.common.util.JsonUtil;
-import com.mt.system.domain.constant.AsyncUrlConstant;
 import net.sf.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import javax.websocket.*;
+import javax.websocket.server.PathParam;
 import javax.websocket.server.ServerEndpoint;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Created with IDEA
@@ -25,116 +22,82 @@ import java.util.concurrent.CopyOnWriteArraySet;
  * 使用websocket的核心，就是一系列的websocket注解，@ServerEndpoint是注册在类上面开启。
  */
 @Component
-@ServerEndpoint(value = "/mtwebsocket/${serialNumber}")
+@ServerEndpoint(value = "/mtwebsocket")
 public class MtWebSocketServer {
     private static Logger logger = LoggerFactory.getLogger(MtWebSocketServer.class);
-    //静态变量，用来记录当前在线连接数。应该把它设计成线程安全的。
-    private static int onlineCount = 0;
-    //concurrent包的线程安全Set，用来存放每个客户端对应的MyWebSocket对象。
-    private static CopyOnWriteArraySet<MtWebSocketServer> webSocketSet = new CopyOnWriteArraySet<MtWebSocketServer>();
+    //private static int onlineCount = 0;
+    //ConcurrentHashMap是线程安全的，而HashMap是线程不安全的。
+    private static ConcurrentHashMap<String,Session> mapUS = new ConcurrentHashMap<String,Session>();
+    private static ConcurrentHashMap<Session,String> mapSU = new ConcurrentHashMap<Session,String>();
 
-    //与某个客户端的连接会话，需要通过它来给客户端发送数据
-    private Session session;
-
-    private String serialNumber;
-
-    /**
-     * 连接建立成功调用的方法
-     */
+    //连接建立成功调用的方法
     @OnOpen
-    public void onOpen(Session session) {
-        //判断该用户是否已经连接
+    public void onOpen(Session session,@PathParam("userId") Integer userId) {
+        String jsonString="{'content':'online','id':"+userId+",'type':'onlineStatus'}";
+        for (String value : mapSU.values()) {
+            try {
+                mapUS.get(value).getBasicRemote().sendText(jsonString);
+            } catch (IOException e) {
+                logger.error("发生异常："+e);
+            }
+        }
+        mapUS.put(userId+"",session);
+        mapSU.put(session,userId+"");
+        //更新redis中的用户在线状态
+        //RedisUtils.set(userId+"_status","online");
+        logger.info("用户"+userId+"进入llws,当前在线人数为" + mapUS.size() );
 
+    }
 
-        this.session = session;
-        webSocketSet.add(this);     //加入set中
-        addOnlineCount();           //在线数加1
-        logger.info("有新连接加入！当前在线人数为" + getOnlineCount());
-        try {
-            sendMessage("连接成功");
-        } catch (IOException e) {
-            e.printStackTrace();
-            logger.error("websocket IO异常");
+    //连接关闭调用的方法
+    @OnClose
+    public void onClose(Session session) {
+        String userId=mapSU.get(session);
+        if(userId!=null&&userId!=""){
+            //更新redis中的用户在线状态
+            //RedisUtils.set(userId+"_status","offline");
+            mapUS.remove(userId);
+            mapSU.remove(session);
+            logger.info("用户"+userId+"退出llws,当前在线人数为" + mapUS.size());
         }
     }
-    /**
-     * 连接关闭调用的方法
-     */
-    @OnClose
-    public void onClose() {
-        webSocketSet.remove(this);  //从set中删除
-        subOnlineCount();           //在线数减1
-        logger.info("有一连接关闭！当前在线人数为" + getOnlineCount());
-    }
-    /**
-     * 收到客户端消息后调用的方法
-     * @param message 客户端发送过来的消息
-     */
+
+    // 收到客户端消息后调用的方法
     @OnMessage
     public void onMessage(String message, Session session) {
-        logger.info("来自客户端的消息:" + message);
-        //客户端传过来数据
-        HashMap<String,Object> jsonMap = JsonUtil.toObject(message,new HashMap<String,Object>().getClass());
-        //站点添加聊天记录-URL
-        String webUrl=jsonMap.get("webUrl").toString();
-        jsonMap.remove("webUrl");
-        //群id:groupId
-        //发送人Id：senderId
-        //记录类型:1文字，2图片，3语音，4短视频 ： contentType
-        //记录内容 :content
-        //图片小图：smallImg
-        //发送时间:格式：yyyy年MM月dd日 时:分 : sendTime
-        JSONObject resultJson = HttpClientTool.mtHttpPost(jsonMap,webUrl+AsyncUrlConstant.SYNERGY_GROUP_RECORD_URL);
-        if (resultJson == null) {
-            throw new IllegalArgumentException("同步数据失败!");
-        }
-        //群发消息
-        for (MtWebSocketServer item : webSocketSet) {
-            try {
-                item.sendMessage(message);
-            } catch (IOException e) {
-                e.printStackTrace();
+        JSONObject jsonObject=JSONObject.fromObject(message);
+        String type = jsonObject.getJSONObject("to").getString("type");
+        for(Session s:session.getOpenSessions()){		//循环发给所有在线的人
+            JSONObject toMessage=new JSONObject();
+            toMessage.put("id", jsonObject.getJSONObject("mine").getString("id"));
+            toMessage.put("content", jsonObject.getJSONObject("mine").getString("content"));
+            toMessage.put("type",type);
+            for (String value : mapSU.values()) {
+                try {
+                    mapUS.get(value).getBasicRemote().sendText(toMessage.toString());
+                } catch (IOException e) {
+                    logger.error("发生异常："+e);
+                }
             }
         }
     }
+
     /**
-     * 发送异常调用
+     * 发生错误时调用
      * @param session
      * @param error
      */
     @OnError
     public void onError(Session session, Throwable error) {
-        error.printStackTrace();
-        logger.error("发生错误");
-        error.printStackTrace();
-    }
-
-    public void sendMessage(String message) throws IOException {
-        this.session.getBasicRemote().sendText(message);
-    }
-    /**
-     * 群发自定义消息
-     * */
-    public static void sendInfo(String message) throws IOException {
-        logger.info(message);
-        for (MtWebSocketServer item : webSocketSet) {
-            try {
-                item.sendMessage(message);
-            } catch (IOException e) {
-                continue;
-            }
+        String userId=mapSU.get(session);
+        if(userId!=null&&userId!=""){
+            //更新redis中的用户在线状态
+            //RedisUtils.set(userId+"_status","offline");
+            mapUS.remove(userId);
+            mapSU.remove(session);
+            logger.info("用户"+userId+"退出llws！当前在线人数为" + mapUS.size());
         }
-    }
-
-    public static synchronized int getOnlineCount() {
-        return onlineCount;
-    }
-
-    public static synchronized void addOnlineCount() {
-        MtWebSocketServer.onlineCount++;
-    }
-
-    public static synchronized void subOnlineCount() {
-        MtWebSocketServer.onlineCount--;
+        logger.error("llws发生错误!");
+        error.printStackTrace();
     }
 }
