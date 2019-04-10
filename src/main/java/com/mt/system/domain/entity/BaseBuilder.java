@@ -6,26 +6,32 @@ package com.mt.system.domain.entity;
  */
 public class BaseBuilder<T> {
 
-    /*响应类型*/
+    /*类型*/
     private String type;
 
     /*流水号*/
     private String serialNumber;
 
-    /*返回数据*/
+    /*消息*/
+    private String msg;
+
+    /*数据*/
     private T data;
 
-    public BaseBuilder(){
-
-    }
-
+    public BaseBuilder(){ }
     public BaseBuilder(String type, String serialNumber){
         this.type=type;
         this.serialNumber=serialNumber;
     }
-    public BaseBuilder(String type, String serialNumber, T data){
+    public BaseBuilder(String type, String serialNumber,String msg){
         this.type=type;
         this.serialNumber=serialNumber;
+        this.msg=msg;
+    }
+    public BaseBuilder(String type, String serialNumber,String msg, T data){
+        this.type=type;
+        this.serialNumber=serialNumber;
+        this.msg=msg;
         this.data=data;
     }
 
@@ -43,6 +49,14 @@ public class BaseBuilder<T> {
 
     public void setSerialNumber(String serialNumber) {
         this.serialNumber = serialNumber;
+    }
+
+    public String getMsg() {
+        return msg;
+    }
+
+    public void setMsg(String msg) {
+        this.msg = msg;
     }
 
     public T getData() {
