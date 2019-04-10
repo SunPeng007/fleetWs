@@ -1,4 +1,4 @@
-package com.mt.system.websocket;
+package com.mt.system.domain.entity;
 
 import javax.websocket.Session;
 
@@ -12,12 +12,15 @@ public class MtSession {
 
     private Session session;
 
-    private String connectTime;
+    private Long connectTime;
+
+    private String token;
 
     public MtSession(){}
 
-    public MtSession(Session session,String connectTime){
+    public MtSession(Session session,String token,Long connectTime){
         this.session=session;
+        this.token=token;
         this.connectTime=connectTime;
     }
 
@@ -29,11 +32,19 @@ public class MtSession {
         this.session = session;
     }
 
-    public String getConnectTime() {
+    public Long getConnectTime() {
         return connectTime;
     }
 
-    public void setConnectTime(String connectTime) {
+    public void setConnectTime(Long connectTime) {
         this.connectTime = connectTime;
+    }
+
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
     }
 }

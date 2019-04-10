@@ -5,6 +5,7 @@ import com.mt.system.common.util.DateUtils;
 import com.mt.system.common.util.JsonUtil;
 import com.mt.system.domain.constant.TypeConstant;
 import com.mt.system.domain.entity.BaseBuilder;
+import com.mt.system.domain.entity.MtSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -40,7 +41,7 @@ public class MtWebSocketServer {
     @OnOpen
     public void onOpen(Session session,@PathParam("token") String token) {
         //连接成功-加人
-        mtSessionMap.put(token, new MtSession(session,DateUtils.currentTimeMillis()));
+        mtSessionMap.put(token, new MtSession(session,token,DateUtils.currentTimeMilli()));
         logger.info("连接成功！");
     }
 
@@ -56,7 +57,7 @@ public class MtWebSocketServer {
     @OnMessage
     public void onMessage(String message, Session session,@PathParam("token") String token) {
         //更新当前连接时间
-        mtSessionMap.get(token).setConnectTime(DateUtils.currentTimeMillis());
+        mtSessionMap.get(token).setConnectTime(DateUtils.currentTimeMilli());
         //接收数据，-- 调用企业站点接口添加记录
         BaseBuilder reqEntity = JsonUtil.toObject(message,BaseBuilder.class);
 

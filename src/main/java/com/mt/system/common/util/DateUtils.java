@@ -204,5 +204,28 @@ public class DateUtils
 			return null;
 		}
 	}
+	/**
+	 * 获取系统时间的时间戳 精确到毫秒
+	 */
+	public static long currentTimeMilli(){
+		try
+		{
+			return System.currentTimeMillis();
+		}
+		catch (Exception e)
+		{
+			return -1;
+		}
+	}
+
+	/**
+	 * 跟当前时间 差多少秒
+	 * @param millis
+	 * @return
+	 */
+	public static long currentCompare(Long millis){
+		Long space = (System.currentTimeMillis() - millis) / 1000;
+		return space;
+	}
 
 }
