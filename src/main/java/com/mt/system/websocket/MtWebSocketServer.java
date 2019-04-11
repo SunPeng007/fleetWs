@@ -6,6 +6,7 @@ import com.mt.system.common.util.JsonUtil;
 import com.mt.system.domain.constant.TypeConstant;
 import com.mt.system.domain.entity.BaseBuilder;
 import com.mt.system.domain.entity.MtSession;
+import com.mt.system.domain.entity.SynergyGroupRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -59,7 +60,7 @@ public class MtWebSocketServer {
         //更新当前连接时间
         mtSessionMap.get(token).setConnectTime(DateUtils.currentTimeMilli());
         //接收数据，-- 调用企业站点接口添加记录
-        BaseBuilder reqEntity = JsonUtil.toObject(message,BaseBuilder.class);
+        BaseBuilder<SynergyGroupRecord> reqEntity = JsonUtil.toObject(message,BaseBuilder.class);
 
 
 
