@@ -1,8 +1,11 @@
 package com.mt.system.websocket;
 
 import com.alibaba.fastjson.JSONObject;
+import com.mt.system.common.code.HttpClientTool;
+import com.mt.system.common.util.BeanToMapUtil;
 import com.mt.system.common.util.DateUtils;
 import com.mt.system.common.util.JsonUtil;
+import com.mt.system.domain.constant.AsyncUrlConstant;
 import com.mt.system.domain.constant.TypeConstant;
 import com.mt.system.domain.entity.BaseBuilder;
 import com.mt.system.domain.entity.MtSession;
@@ -14,6 +17,8 @@ import javax.websocket.*;
 import javax.websocket.server.PathParam;
 import javax.websocket.server.ServerEndpoint;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -57,22 +62,27 @@ public class MtWebSocketServer {
     // 收到客户端消息后调用的方法
     @OnMessage
     public void onMessage(String message, Session session,@PathParam("token") String token) {
-        //更新当前连接时间
-        mtSessionMap.get(token).setConnectTime(DateUtils.currentTimeMilli());
-        //接收数据，-- 调用企业站点接口添加记录
-        BaseBuilder<SynergyGroupRecord> reqEntity = JsonUtil.toObject(message,BaseBuilder.class);
-
-
-
-        //群发消息
-        for (MtSession mtSession : mtSessionMap.values()) {
-            if(mtSession.getSession()!=session){
-                mtSendText(session,JSONObject.toJSONString(reqEntity));
+        try{
+            //更新当前连接时间
+            mtSessionMap.get(token).setConnectTime(DateUtils.currentTimeMilli());
+            //接收数据，-- 调用企业站点接口添加记录
+            BaseBuilder<SynergyGroupRecord> reqEntity = JsonUtil.toObject(message,BaseBuilder.class);
+            //访问企业站点-添加记录
+            Map<String,Object> dataMap =HttpClientTool.mtHttpPost(BeanToMapUtil.convertBean(reqEntity),AsyncUrlConstant.ADD_GROUP_RECORD_URL);
+            BaseBuilder<Map<String,Object>> result=new BaseBuilder(TypeConstant.RESPONSE_PUSH_TYPE,"","",dataMap);
+            //群发消息
+            for (MtSession mtSession : mtSessionMap.values()) {
+                if(mtSession.getSession()!=session){
+                    mtSendText(session,JSONObject.toJSONString(result));
+                }
             }
+            //给当前连接发消息提示成功。
+            BaseBuilder<Map<String,Object>> resultUs=new BaseBuilder(TypeConstant.RESPONSE_SUCCESS_TYPE,reqEntity.getSerialNumber(),"发送成功!",null);
+            mtSendText(session,JSONObject.toJSONString(resultUs));
+        }catch (Exception e){
+            e.printStackTrace();
+            logger.error("聊天消息发送异常:"+e);
         }
-        //给当前连接发消息提示成功。
-        reqEntity.setType(TypeConstant.RESPONSE_SUCCESS_TYPE);
-        mtSendText(session,JSONObject.toJSONString(reqEntity));
     }
     /**
      * 发生错误时调用

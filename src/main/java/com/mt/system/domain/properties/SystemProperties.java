@@ -20,6 +20,7 @@ public class SystemProperties {
      */
     public static String systemSalt;//证书MD5加密盐
     public static String buApiUrl;//bu平台api接口地址
+    public static String apiUrl;//企业站点api接口地址
 
     public String getSystemSalt() {
         return systemSalt;
@@ -35,5 +36,13 @@ public class SystemProperties {
 
     public void setBuApiUrl(String buApiUrl) {
         SystemProperties.buApiUrl = buApiUrl;
+    }
+
+    public String getApiUrl() {
+        return apiUrl;
+    }
+
+    public void setApiUrl(String apiUrl) {
+        SystemProperties.apiUrl = apiUrl;
     }
 }

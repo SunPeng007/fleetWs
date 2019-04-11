@@ -16,5 +16,7 @@ public interface TypeConstant {
     String RESPONSE_SUCCESS_TYPE = "000000";
     /*响应失败时状态*/
     String RESPONSE_FAIL_TYPE = "999999";
+    /*服务器主动推送数据*/
+    String RESPONSE_PUSH_TYPE = "666666";
 
 }

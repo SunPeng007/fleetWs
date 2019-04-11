@@ -2,9 +2,9 @@ package com.mt.system.common.code;
 
 import com.mt.system.common.util.DateUtils;
 import com.mt.system.common.util.HttpUtils;
+import com.mt.system.common.util.JsonUtil;
 import com.mt.system.common.util.RSAUtils4Client;
-import com.mt.system.domain.properties.SystemProperties;
-import net.sf.json.JSONObject;
+import com.alibaba.fastjson.JSONObject;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -22,17 +22,17 @@ public class HttpClientTool {
      * @param urls 请求地址
      * @return
      */
-    public static JSONObject mtHttpPost(Map<String,Object> dataMap,String urls)  throws RuntimeException {
+    public static Map<String,Object> mtHttpPost(Map<String,Object> dataMap,String urls)  throws RuntimeException {
         Map<String,String> reqParam=new HashMap<>();
         reqParam.put("paramsData",RSAUtils4Client.encryptionDataPacket(dataMap,"",Long.valueOf(DateUtils.currentTimeMillis())));
-        String resultData = HttpUtils.sendPost(SystemProperties.buApiUrl+urls,reqParam);
-        JSONObject jsonData=JSONObject.fromObject(resultData);
-        Map<String,Object> results=RSAUtils4Client.decryptionPostParam(jsonData.get("resultData").toString(),RSAUtils4Client.RES_PRIVATE_KEY);
+        String resultData = HttpUtils.sendPost(urls,reqParam);
+        Map<String,Object> resultMap =JsonUtil.toObject(resultData,HashMap.class);
+        Map<String,Object> results=RSAUtils4Client.decryptionPostParam(resultMap.get("resultData").toString(),RSAUtils4Client.RES_PRIVATE_KEY);
         if (results == null || !"000000".equals(results.get("code").toString().trim())) {
             throw new RuntimeException(results.get("msg").toString());
         }
-        JSONObject resultJson=JSONObject.fromObject(results.get("data"));
-        return resultJson;
+        Map<String,Object> result=(Map<String,Object>)results.get("data");
+        return result;
     }
 
 }
