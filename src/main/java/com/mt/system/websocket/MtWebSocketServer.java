@@ -10,6 +10,7 @@ import com.mt.system.domain.constant.TypeConstant;
 import com.mt.system.domain.entity.BaseBuilder;
 import com.mt.system.domain.entity.MtSession;
 import com.mt.system.domain.entity.SynergyGroupRecord;
+import com.mt.system.domain.properties.SystemProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -46,17 +47,27 @@ public class MtWebSocketServer {
     //连接建立成功调用的方法
     @OnOpen
     public void onOpen(Session session,@PathParam("token") String token) {
-        //连接成功-加人
-        mtSessionMap.put(token, new MtSession(session,token,DateUtils.currentTimeMilli()));
-        logger.info("连接成功！");
+        try{
+            //连接成功-加人
+            mtSessionMap.put(token, new MtSession(session,token,DateUtils.currentTimeMilli()));
+            logger.info("连接成功!");
+        }catch (Exception e){
+            e.printStackTrace();
+            logger.error("发生异常:"+e);
+        }
     }
 
     //连接关闭调用的方法
     @OnClose
     public void onClose(Session session,@PathParam("token") String token)throws IOException {
-        //移除当前连接
-        mtSessionMap.remove(token);
-        logger.info("关闭连接成功！");
+        try{
+            //移除当前连接
+            mtSessionMap.remove(token);
+            logger.info("连接关闭调用!");
+        }catch (Exception e){
+            e.printStackTrace();
+            logger.error("发生异常:"+e);
+        }
     }
 
     // 收到客户端消息后调用的方法
@@ -68,7 +79,7 @@ public class MtWebSocketServer {
             //接收数据，-- 调用企业站点接口添加记录
             BaseBuilder<SynergyGroupRecord> reqEntity = JsonUtil.toObject(message,BaseBuilder.class);
             //访问企业站点-添加记录
-            Map<String,Object> dataMap =HttpClientTool.mtHttpPost(BeanToMapUtil.convertBean(reqEntity),AsyncUrlConstant.ADD_GROUP_RECORD_URL);
+            Map<String,Object> dataMap =HttpClientTool.mtHttpPost(BeanToMapUtil.convertBean(reqEntity),SystemProperties.apiUrl+AsyncUrlConstant.ADD_GROUP_RECORD_URL);
             BaseBuilder<Map<String,Object>> result=new BaseBuilder(TypeConstant.RESPONSE_PUSH_TYPE,"","",dataMap);
             //群发消息
             for (MtSession mtSession : mtSessionMap.values()) {
@@ -91,9 +102,14 @@ public class MtWebSocketServer {
      */
     @OnError
     public void onError(Session session, Throwable error,@PathParam("token") String token) {
-        //移除当前连接
-        mtSessionMap.remove(token);
-        logger.error("发生错误!");
+        try{
+            //移除当前连接
+            mtSessionMap.remove(token);
+            logger.info("发生错误时调用!");
+        }catch (Exception e){
+            e.printStackTrace();
+            logger.error("发生异常:"+e);
+        }
     }
     /**
      * 发送消息
