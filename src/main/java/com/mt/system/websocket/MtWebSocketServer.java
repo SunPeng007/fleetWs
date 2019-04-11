@@ -49,10 +49,10 @@ public class MtWebSocketServer {
         try{
             //连接成功-加人
             mtSessionMap.put(token, new MtSession(session,token,DateUtils.currentTimeMilli()));
-            logger.info("连接成功!");
+            logger.info("连接成功调用!");
         }catch (Exception e){
             e.printStackTrace();
-            logger.error("发生异常:"+e);
+            logger.error("连接发生异常:"+e);
         }
     }
 
@@ -65,7 +65,7 @@ public class MtWebSocketServer {
             logger.info("连接关闭调用!");
         }catch (Exception e){
             e.printStackTrace();
-            logger.error("发生异常:"+e);
+            logger.error("连接关闭发生异常:"+e);
         }
     }
 
@@ -91,7 +91,7 @@ public class MtWebSocketServer {
             mtSendText(session,JSONObject.toJSONString(resultUs));
         }catch (Exception e){
             e.printStackTrace();
-            logger.error("聊天消息发送异常:"+e);
+            logger.error("发送消息发生异常:"+e);
         }
     }
     /**
@@ -107,7 +107,7 @@ public class MtWebSocketServer {
             logger.info("发生错误时调用!");
         }catch (Exception e){
             e.printStackTrace();
-            logger.error("发生异常:"+e);
+            logger.error("连接关闭发生异常:"+e);
         }
     }
     /**
@@ -120,7 +120,7 @@ public class MtWebSocketServer {
             session.getBasicRemote().sendText(msg);
         } catch (IOException e) {
             e.printStackTrace();
-            logger.error("发生异常："+e);
+            logger.error("发送消息发生异常："+e);
         }
     }
 }
