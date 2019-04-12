@@ -38,6 +38,9 @@ public class MtWebSocketServer {
     //记录连接对象
     private static ConcurrentHashMap<String,MtSession> mtSessionMap = new ConcurrentHashMap<String,MtSession>();
 
+    //记录服务器发送消息--未回应对象
+    private static ConcurrentHashMap<String,BaseBuilder> mtEchoMap = new ConcurrentHashMap<String,BaseBuilder>();
+
     //定时任务获取session
     public static ConcurrentHashMap<String,MtSession> getMtSessionMap(){
         return mtSessionMap;
@@ -73,11 +76,23 @@ public class MtWebSocketServer {
         try{
             //更新当前连接时间
             mtSessionMap.get(token).setConnectTime(DateUtils.currentTimeMilli());
+            //判断回应类型
             //接收数据，-- 调用企业站点接口添加记录
             BaseBuilder<SynergyGroupRecord> reqEntity = JsonUtil.toObject(message,BaseBuilder.class);
+
+            //判断类型
+            if(TypeConstant.REQUEST_RESPONSE_TYPE.equals(reqEntity.getRequestType())){//服务器发送消息，客户端回应
+
+            }
+
+
+
+
+            reqEntity.getData().setDeviceType(reqEntity.getRequestType());
             //访问企业站点-添加记录
             Map<String,Object> dataMap =HttpClientTool.mtHttpPost(BeanToMapUtil.convertBean(reqEntity),SystemProperties.apiUrl+AsyncUrlConstant.ADD_GROUP_RECORD_URL);
-            BaseBuilder<Map<String,Object>> result=new BaseBuilder(TypeConstant.RESPONSE_PUSH_TYPE,"","",dataMap);
+            BaseBuilder<Map<String,Object>> result=new BaseBuilder("","",dataMap);
+            result.setResponseType(TypeConstant.RESPONSE_PUSH_TYPE);//设置响应类型
             //群发消息
             for (MtSession mtSession : mtSessionMap.values()) {
                 if(mtSession.getSession()!=session){
@@ -85,9 +100,14 @@ public class MtWebSocketServer {
                 }
             }
             //给当前连接发消息提示成功。
-            BaseBuilder<Map<String,Object>> resultUs=new BaseBuilder(TypeConstant.RESPONSE_SUCCESS_TYPE,reqEntity.getSerialNumber(),"发送成功!",null);
+            BaseBuilder<Map<String,Object>> resultUs=new BaseBuilder(reqEntity.getSerialNumber(),"发送成功!",null);
+            resultUs.setResponseType(TypeConstant.RESPONSE_SUCCESS_TYPE);//设置响应类型
             mtSendText(session,JSONObject.toJSONString(resultUs));
         }catch (Exception e){
+            BaseBuilder<SynergyGroupRecord> reqEntity = JsonUtil.toObject(message,BaseBuilder.class);
+            BaseBuilder<Map<String,Object>> resultUs=new BaseBuilder(reqEntity.getSerialNumber(),"发送失败!",null);
+            resultUs.setResponseType(TypeConstant.RESPONSE_FAIL_TYPE);//设置响应类型
+            mtSendText(session,JSONObject.toJSONString(resultUs));
             e.printStackTrace();
             logger.error("发送消息发生异常:"+e);
         }

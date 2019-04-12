@@ -11,6 +11,8 @@ public interface TypeConstant {
     String REQUEST_AN_TYPE = "an";
     /*请求类型: h5*/
     String REQUEST_H5_TYPE = "h5";
+    /*客户端回应信息*/
+    String REQUEST_RESPONSE_TYPE = "555555";
 
     /*响应成功时状态*/
     String RESPONSE_SUCCESS_TYPE = "000000";
@@ -18,5 +20,6 @@ public interface TypeConstant {
     String RESPONSE_FAIL_TYPE = "999999";
     /*服务器主动推送数据*/
     String RESPONSE_PUSH_TYPE = "666666";
+
 
 }
