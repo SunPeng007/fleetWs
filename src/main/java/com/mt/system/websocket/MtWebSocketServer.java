@@ -55,7 +55,6 @@ public class MtWebSocketServer {
             logger.error("连接发生异常:"+e);
         }
     }
-
     //连接关闭调用的方法
     @OnClose
     public void onClose(Session session,@PathParam("token") String token)throws IOException {
@@ -68,7 +67,6 @@ public class MtWebSocketServer {
             logger.error("连接关闭发生异常:"+e);
         }
     }
-
     // 收到客户端消息后调用的方法
     @OnMessage
     public void onMessage(String message, Session session,@PathParam("token") String token) {

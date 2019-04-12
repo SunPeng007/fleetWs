@@ -21,6 +21,8 @@ public class SynergyGroupRecord {
 
     private Byte duration;
 
+    private String deviceType;
+
     public Long getId() {
         return id;
     }
@@ -91,5 +93,13 @@ public class SynergyGroupRecord {
 
     public void setDuration(Byte duration) {
         this.duration = duration;
+    }
+
+    public String getDeviceType() {
+        return deviceType;
+    }
+
+    public void setDeviceType(String deviceType) {
+        this.deviceType = deviceType;
     }
 }
