@@ -18,6 +18,7 @@ import javax.websocket.*;
 import javax.websocket.server.PathParam;
 import javax.websocket.server.ServerEndpoint;
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -45,8 +46,16 @@ public class MtWebSocketServer {
     public static ConcurrentHashMap<String,MtSession> getMtSessionMap(){
         return mtSessionMap;
     }
+    //线程出现未回应了对象
+    public static ConcurrentHashMap<String,BaseBuilder> getMtEchoMap(){
+        return mtEchoMap;
+    }
 
-    //连接建立成功调用的方法
+    /**
+     * 连接建立成功调用的方法
+     * @param session
+     * @param token
+     */
     @OnOpen
     public void onOpen(Session session,@PathParam("token") String token) {
         try{
@@ -58,7 +67,12 @@ public class MtWebSocketServer {
             logger.error("连接发生异常:"+e);
         }
     }
-    //连接关闭调用的方法
+    /**
+     * 连接关闭调用的方法
+     * @param session
+     * @param token
+     * @throws IOException
+     */
     @OnClose
     public void onClose(Session session,@PathParam("token") String token)throws IOException {
         try{
@@ -68,48 +82,6 @@ public class MtWebSocketServer {
         }catch (Exception e){
             e.printStackTrace();
             logger.error("连接关闭发生异常:"+e);
-        }
-    }
-    // 收到客户端消息后调用的方法
-    @OnMessage
-    public void onMessage(String message, Session session,@PathParam("token") String token) {
-        try{
-            //更新当前连接时间
-            mtSessionMap.get(token).setConnectTime(DateUtils.currentTimeMilli());
-            //判断回应类型
-            //接收数据，-- 调用企业站点接口添加记录
-            BaseBuilder<SynergyGroupRecord> reqEntity = JsonUtil.toObject(message,BaseBuilder.class);
-
-            //判断类型
-            if(TypeConstant.REQUEST_RESPONSE_TYPE.equals(reqEntity.getRequestType())){//服务器发送消息，客户端回应
-
-            }
-
-
-
-
-            reqEntity.getData().setDeviceType(reqEntity.getRequestType());
-            //访问企业站点-添加记录
-            Map<String,Object> dataMap =HttpClientTool.mtHttpPost(BeanToMapUtil.convertBean(reqEntity),SystemProperties.apiUrl+AsyncUrlConstant.ADD_GROUP_RECORD_URL);
-            BaseBuilder<Map<String,Object>> result=new BaseBuilder("","",dataMap);
-            result.setResponseType(TypeConstant.RESPONSE_PUSH_TYPE);//设置响应类型
-            //群发消息
-            for (MtSession mtSession : mtSessionMap.values()) {
-                if(mtSession.getSession()!=session){
-                    mtSendText(session,JSONObject.toJSONString(result));
-                }
-            }
-            //给当前连接发消息提示成功。
-            BaseBuilder<Map<String,Object>> resultUs=new BaseBuilder(reqEntity.getSerialNumber(),"发送成功!",null);
-            resultUs.setResponseType(TypeConstant.RESPONSE_SUCCESS_TYPE);//设置响应类型
-            mtSendText(session,JSONObject.toJSONString(resultUs));
-        }catch (Exception e){
-            BaseBuilder<SynergyGroupRecord> reqEntity = JsonUtil.toObject(message,BaseBuilder.class);
-            BaseBuilder<Map<String,Object>> resultUs=new BaseBuilder(reqEntity.getSerialNumber(),"发送失败!",null);
-            resultUs.setResponseType(TypeConstant.RESPONSE_FAIL_TYPE);//设置响应类型
-            mtSendText(session,JSONObject.toJSONString(resultUs));
-            e.printStackTrace();
-            logger.error("发送消息发生异常:"+e);
         }
     }
     /**
@@ -127,6 +99,80 @@ public class MtWebSocketServer {
             e.printStackTrace();
             logger.error("连接关闭发生异常:"+e);
         }
+    }
+    /**
+     * 收到客户端消息后调用的方法
+     * @param message
+     * @param session
+     * @param token
+     */
+    @OnMessage
+    public void onMessage(String message, Session session,@PathParam("token") String token) {
+        try{
+            //更新当前连接时间
+            mtSessionMap.get(token).setConnectTime(DateUtils.currentTimeMilli());
+            //判断回应类型
+            //接收数据，-- 调用企业站点接口添加记录
+            BaseBuilder<SynergyGroupRecord> reqEntity = JsonUtil.toObject(message,BaseBuilder.class);
+            //服务器发送消息，客户端回应
+            if(TypeConstant.REQUEST_RESPONSE_TYPE.equals(reqEntity.getRequestType())){
+                //移除-服务器发送消息
+                mtEchoMap.remove(token);
+            }else{
+                /*接收到客户端信息-服务端推消息给用户*/
+                servicePushUser(reqEntity,session,token);
+                /*给当前连接发消息提示成功*/
+                BaseBuilder<Map<String,Object>> resultUs=new BaseBuilder(reqEntity.getSerialNumber(),"发送成功!",null);
+                resultUs.setResponseType(TypeConstant.RESPONSE_SUCCESS_TYPE);//设置响应类型
+                mtSendText(session,JSONObject.toJSONString(resultUs));
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+            logger.error("发送消息发生异常:"+e);
+        }
+    }
+    /**
+     * 接收到客户端信息-服务端推消息给用户
+     * @param reqEntity
+     * @param session
+     * @param token
+     * @throws Exception
+     */
+    public void servicePushUser(BaseBuilder<SynergyGroupRecord> reqEntity,Session session,String token)throws Exception{
+        reqEntity.getData().setDeviceType(reqEntity.getRequestType());
+        /*访问企业站点-添加记录*/
+        String url=SystemProperties.apiUrl+AsyncUrlConstant.ADD_GROUP_RECORD_URL;//请求接口地址
+        Map<String,Object> dataMap =HttpClientTool.mtHttpPost(BeanToMapUtil.convertBean(reqEntity),url);
+        SynergyGroupRecord sgr=(SynergyGroupRecord)BeanToMapUtil.convertMap(SynergyGroupRecord.class,dataMap);
+        /*创建发送消息数据*/
+        String uuid = java.util.UUID.randomUUID().toString();//生成uuid 作为流水号
+        BaseBuilder<SynergyGroupRecord> pushNews = new BaseBuilder(uuid,"服务器推送消息!",sgr);
+        pushNews.setResponseType(TypeConstant.RESPONSE_PUSH_TYPE); //设置响应类型
+        /*群发消息*/
+        Iterator<String> iter = mtSessionMap.keySet().iterator();
+        while(iter.hasNext()){
+            String key=iter.next();
+            MtSession mtSession = mtSessionMap.get(key);
+            if(mtSession.getSession()!=session){
+                mtSendText(session,JSONObject.toJSONString(pushNews));
+                //记录发送消息给谁
+                BaseBuilder<SynergyGroupRecord> resEntity =pushNews.clone();
+                addMtEcho(resEntity,1,token,key);
+            }
+        }
+    }
+    /**
+     * 记录发送消息给谁
+     * @param resEntity
+     * @param pustNumber
+     * @param pustToken
+     * @param receiveToken
+     */
+    private void addMtEcho(BaseBuilder<SynergyGroupRecord> resEntity,int pustNumber,String pustToken,String receiveToken){
+        resEntity.setPustNumber(pustNumber);
+        resEntity.setPustToken(pustToken);
+        resEntity.setReceiveToken(receiveToken);
+        mtEchoMap.put(receiveToken,resEntity);
     }
     /**
      * 发送消息

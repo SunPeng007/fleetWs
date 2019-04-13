@@ -4,7 +4,7 @@ package com.mt.system.domain.entity;
  *  响应json数据包类
  * Created by chenpan on 4/27/18.
  */
-public class BaseBuilder<T> {
+public class BaseBuilder<T> implements Cloneable{
 
     /*请求类型*/
     private String requestType;
@@ -102,5 +102,18 @@ public class BaseBuilder<T> {
     public void setReceiveToken(String receiveToken) {
         this.receiveToken = receiveToken;
     }
+
+    @Override
+    public BaseBuilder clone()
+    {
+        BaseBuilder entity = null;
+        try{
+            entity = (BaseBuilder)super.clone();
+        }catch(CloneNotSupportedException e) {
+            e.printStackTrace();
+        }
+        return entity;
+    }
+
 }
 
