@@ -4,7 +4,7 @@ package com.mt.system.domain.entity;
  *  响应json数据包类
  * Created by chenpan on 4/27/18.
  */
-public class BaseBuilder<T> implements Cloneable{
+public class BaseBuilder implements Cloneable{
 
     /*请求类型*/
     private String requestType;
@@ -13,7 +13,7 @@ public class BaseBuilder<T> implements Cloneable{
     /*消息*/
     private String msg;
     /*数据*/
-    private T data;
+    private SynergyGroupRecord data;
 
     /*响应类型*/
     private String responseType;
@@ -25,12 +25,12 @@ public class BaseBuilder<T> implements Cloneable{
     private String receiveToken;
 
     public BaseBuilder(){ }
-    public BaseBuilder(String serialNumber,String msg, T data){
+    public BaseBuilder(String serialNumber,String msg,SynergyGroupRecord data){
         this.serialNumber=serialNumber;
         this.msg=msg;
         this.data=data;
     }
-    public BaseBuilder(int pustNumber,String pustToken,String receiveToken,String serialNumber,String msg, T data){
+    public BaseBuilder(int pustNumber,String pustToken,String receiveToken,String serialNumber,String msg, SynergyGroupRecord data){
         this.pustNumber=pustNumber;
         this.pustToken=pustToken;
         this.receiveToken=receiveToken;
@@ -71,11 +71,11 @@ public class BaseBuilder<T> implements Cloneable{
         this.msg = msg;
     }
 
-    public T getData() {
+    public SynergyGroupRecord getData() {
         return data;
     }
 
-    public void setData(T data) {
+    public void setData(SynergyGroupRecord data) {
         this.data = data;
     }
 

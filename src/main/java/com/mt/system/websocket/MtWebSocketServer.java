@@ -113,7 +113,7 @@ public class MtWebSocketServer {
             mtSessionMap.get(token).setConnectTime(DateUtils.currentTimeMilli());
             //判断回应类型
             //接收数据，-- 调用企业站点接口添加记录
-            BaseBuilder<SynergyGroupRecord> reqEntity = JsonUtil.toObject(message,BaseBuilder.class);
+            BaseBuilder reqEntity = JsonUtil.toObject(message,BaseBuilder.class);
             //服务器发送消息，客户端回应
             if(TypeConstant.REQUEST_RESPONSE_TYPE.equals(reqEntity.getRequestType())){
                 //移除-服务器发送消息
@@ -122,7 +122,7 @@ public class MtWebSocketServer {
                 /*接收到客户端信息-服务端推消息给用户*/
                 servicePushUser(reqEntity,session,token);
                 /*给当前连接发消息提示成功*/
-                BaseBuilder<Map<String,Object>> resultUs=new BaseBuilder(reqEntity.getSerialNumber(),"发送成功!",null);
+                BaseBuilder resultUs=new BaseBuilder(reqEntity.getSerialNumber(),"发送成功!",null);
                 resultUs.setResponseType(TypeConstant.RESPONSE_SUCCESS_TYPE);//设置响应类型
                 mtSendText(session,JSONObject.toJSONString(resultUs));
             }
@@ -138,15 +138,15 @@ public class MtWebSocketServer {
      * @param token
      * @throws Exception
      */
-    public void servicePushUser(BaseBuilder<SynergyGroupRecord> reqEntity,Session session,String token)throws Exception{
+    public void servicePushUser(BaseBuilder reqEntity,Session session,String token)throws Exception{
         reqEntity.getData().setDeviceType(reqEntity.getRequestType());
         /*访问企业站点-添加记录*/
         String url=SystemProperties.apiUrl+AsyncUrlConstant.ADD_GROUP_RECORD_URL;//请求接口地址
-        Map<String,Object> dataMap =HttpClientTool.mtHttpPost(BeanToMapUtil.convertBean(reqEntity),url);
+        Map<String,Object> dataMap =HttpClientTool.mtHttpPost(BeanToMapUtil.convertBean(reqEntity.getData()),url);
         SynergyGroupRecord sgr=(SynergyGroupRecord)BeanToMapUtil.convertMap(SynergyGroupRecord.class,dataMap);
         /*创建发送消息数据*/
         String uuid = java.util.UUID.randomUUID().toString();//生成uuid 作为流水号
-        BaseBuilder<SynergyGroupRecord> pushNews = new BaseBuilder(uuid,"服务器推送消息!",sgr);
+        BaseBuilder pushNews = new BaseBuilder(uuid,"服务器推送消息!",sgr);
         pushNews.setResponseType(TypeConstant.RESPONSE_PUSH_TYPE); //设置响应类型
         /*群发消息*/
         Iterator<String> iter = mtSessionMap.keySet().iterator();
@@ -156,7 +156,7 @@ public class MtWebSocketServer {
             if(mtSession.getSession()!=session){
                 mtSendText(session,JSONObject.toJSONString(pushNews));
                 //记录发送消息给谁
-                BaseBuilder<SynergyGroupRecord> resEntity =pushNews.clone();
+                BaseBuilder resEntity =pushNews.clone();
                 addMtEcho(resEntity,1,token,key);
             }
         }
@@ -168,7 +168,7 @@ public class MtWebSocketServer {
      * @param pustToken
      * @param receiveToken
      */
-    private void addMtEcho(BaseBuilder<SynergyGroupRecord> resEntity,int pustNumber,String pustToken,String receiveToken){
+    private void addMtEcho(BaseBuilder resEntity,int pustNumber,String pustToken,String receiveToken){
         resEntity.setPustNumber(pustNumber);
         resEntity.setPustToken(pustToken);
         resEntity.setReceiveToken(receiveToken);

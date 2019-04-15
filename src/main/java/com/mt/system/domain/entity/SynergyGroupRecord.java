@@ -15,13 +15,16 @@ public class SynergyGroupRecord {
 
     private String smallImg;
 
-    private Date sendTime;
+    private String sendTime;
 
     private Byte status;
 
     private Byte duration;
 
     private String deviceType;
+
+    private String avatar;
+    private String nickname;
 
     public Long getId() {
         return id;
@@ -71,11 +74,11 @@ public class SynergyGroupRecord {
         this.smallImg = smallImg == null ? null : smallImg.trim();
     }
 
-    public Date getSendTime() {
+    public String getSendTime() {
         return sendTime;
     }
 
-    public void setSendTime(Date sendTime) {
+    public void setSendTime(String sendTime) {
         this.sendTime = sendTime;
     }
 
@@ -101,5 +104,21 @@ public class SynergyGroupRecord {
 
     public void setDeviceType(String deviceType) {
         this.deviceType = deviceType;
+    }
+
+    public String getAvatar() {
+        return avatar;
+    }
+
+    public void setAvatar(String avatar) {
+        this.avatar = avatar;
+    }
+
+    public String getNickname() {
+        return nickname;
+    }
+
+    public void setNickname(String nickname) {
+        this.nickname = nickname;
     }
 }
