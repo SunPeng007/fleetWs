@@ -121,16 +121,18 @@ public class MtWebSocketServer {
                 //移除-服务器发送消息
                 mtPushMap.remove(token);
             }else{
-                reqEntity.getData().setSendTime(DateUtils.getDateTime());
-                //添加接收消息
-                mtReceiveMap.put(token,reqEntity);
-
-                /*给当前连接发消息提示成功*/
-                BaseBuilder resultUs=reqEntity.clone();
-                resultUs.setResponseType(TypeConstant.RESPONSE_SUCCESS_TYPE);//设置响应类型
-                mtSendText(session,resultUs);
-                /*接收到客户端信息-服务端推消息给用户*/
-                servicePushUser(reqEntity,token);
+                //判断该消息是否发送过
+                if(mtReceiveMap.get(token+reqEntity.getSerialNumber())==null){
+                    reqEntity.getData().setSendTime(DateUtils.getDateTime());
+                    //添加接收消息
+                    mtReceiveMap.put(token+reqEntity.getSerialNumber(),reqEntity);
+                    /*接收到客户端信息-服务端推消息给用户*/
+                    servicePushUser(reqEntity,token);
+                    /*给当前连接发消息提示成功*/
+                    BaseBuilder resultUs=reqEntity.clone();
+                    resultUs.setResponseType(TypeConstant.RESPONSE_SUCCESS_TYPE);//设置响应类型
+                    mtSendText(session,resultUs);
+                }
             }
         }catch (Exception e){
             e.printStackTrace();

@@ -29,27 +29,28 @@ public class CleanEchoRunnable implements Runnable{
                     ConcurrentHashMap<String,BaseBuilder> mtEchoMap = MtWebSocketServer.getMtPushMap();
                     ConcurrentHashMap<String,MtSession> mtSessionMap = MtWebSocketServer.getMtSessionMap();
                     /*判断是否需要重发*/
-                    for (BaseBuilder baseBuilder : mtEchoMap.values()) {
-                        String token = baseBuilder.getReceiveToken();
-                        //先判断连接是否打开
-                        if(mtSessionMap.get(token)!=null){
+                    if(mtEchoMap!=null && mtEchoMap.size()>0){
+                        for (BaseBuilder baseBuilder : mtEchoMap.values()) {
+                            logger.info("开始检测是否需要重发!");
+                            String token = baseBuilder.getReceiveToken();
                             Session session=mtSessionMap.get(token).getSession();
-                            if(session.isOpen()){
-                                //判断是否需要重发
-                                if(DateUtils.currentCompare(baseBuilder.getPushTime())>ConnectTimeConstant.ANSWER_TIME_CODE){
-                                    //判断重发次数是否达到上限
-                                    if(baseBuilder.getPustNumber()<PantNumberConstant.PANT_NUMBER_CODE){
-                                        baseBuilder.setPustNumber((baseBuilder.getPustNumber()+1));
-                                        MtWebSocketServer.mtSendText(session,baseBuilder);
-                                        logger.info(token+"连接重发!");
-                                    }else{
-                                        //清除连接
-                                        closeSession(mtEchoMap,mtSessionMap,token);
-                                    }
-                                }
-                            }else{
+                            //先判断连接是否打开
+                            if(!session.isOpen()) {
                                 //清除连接
                                 closeSession(mtEchoMap,mtSessionMap,token);
+                                continue;
+                            }
+                            //判断是否需要重发
+                            if(DateUtils.currentCompare(baseBuilder.getPushTime())>ConnectTimeConstant.ANSWER_TIME_CODE){
+                                //判断重发次数是否达到上限
+                                if(baseBuilder.getPustNumber()<PantNumberConstant.PANT_NUMBER_CODE){
+                                    baseBuilder.setPustNumber((baseBuilder.getPustNumber()+1));
+                                    MtWebSocketServer.mtSendText(session,baseBuilder);
+                                    logger.info(token+"消息重发!");
+                                }else{
+                                    //清除连接
+                                    closeSession(mtEchoMap,mtSessionMap,token);
+                                }
                             }
                         }
                     }
