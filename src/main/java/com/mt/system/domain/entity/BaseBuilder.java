@@ -23,17 +23,11 @@ public class BaseBuilder implements Cloneable{
     private int pustNumber;
     /*接收token*/
     private String receiveToken;
+    /*服务器推送:发送时间*/
+    private long pushTime;
 
     public BaseBuilder(){ }
     public BaseBuilder(String serialNumber,String msg,SynergyGroupRecord data){
-        this.serialNumber=serialNumber;
-        this.msg=msg;
-        this.data=data;
-    }
-    public BaseBuilder(int pustNumber,String pustToken,String receiveToken,String serialNumber,String msg, SynergyGroupRecord data){
-        this.pustNumber=pustNumber;
-        this.pustToken=pustToken;
-        this.receiveToken=receiveToken;
         this.serialNumber=serialNumber;
         this.msg=msg;
         this.data=data;
@@ -101,6 +95,14 @@ public class BaseBuilder implements Cloneable{
 
     public void setReceiveToken(String receiveToken) {
         this.receiveToken = receiveToken;
+    }
+
+    public long getPushTime() {
+        return pushTime;
+    }
+
+    public void setPushTime(long pushTime) {
+        this.pushTime = pushTime;
     }
 
     @Override

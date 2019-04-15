@@ -12,6 +12,14 @@ public interface ConnectTimeConstant {
      */
     long EFFECTIVE_TIME_CODE=1800;//单位秒，分钟30*60
 
-    long SLEEP_TIME_CODE=10;//单位秒
+    /**
+     * 定时清理未回应连接
+     */
+    long SLEEP_TIME_CODE=5;//秒
+
+    /**
+     * 最长允许回应时间
+     */
+    long ANSWER_TIME_CODE=5;//秒
 }
 

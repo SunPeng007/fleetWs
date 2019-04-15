@@ -7,5 +7,8 @@ package com.mt.system.domain.constant;
  * Time:16:00
  */
 public interface PantNumberConstant {
-    int PANT_NUMBER_CODE=5;//单位自
+    /**
+     * 重发次数
+     */
+    int PANT_NUMBER_CODE=5;//单位次
 }

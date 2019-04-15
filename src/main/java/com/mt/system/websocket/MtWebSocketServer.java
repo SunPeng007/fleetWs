@@ -119,12 +119,12 @@ public class MtWebSocketServer {
                 //移除-服务器发送消息
                 mtEchoMap.remove(token);
             }else{
-                /*接收到客户端信息-服务端推消息给用户*/
-                servicePushUser(reqEntity,session,token);
                 /*给当前连接发消息提示成功*/
                 BaseBuilder resultUs=new BaseBuilder(reqEntity.getSerialNumber(),"发送成功!",null);
                 resultUs.setResponseType(TypeConstant.RESPONSE_SUCCESS_TYPE);//设置响应类型
                 mtSendText(session,JSONObject.toJSONString(resultUs));
+                /*接收到客户端信息-服务端推消息给用户*/
+                servicePushUser(reqEntity,session,token);
             }
         }catch (Exception e){
             e.printStackTrace();
@@ -172,6 +172,7 @@ public class MtWebSocketServer {
         resEntity.setPustNumber(pustNumber);
         resEntity.setPustToken(pustToken);
         resEntity.setReceiveToken(receiveToken);
+        resEntity.setPushTime(DateUtils.currentTimeMilli());
         mtEchoMap.put(receiveToken,resEntity);
     }
     /**
