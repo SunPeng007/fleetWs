@@ -16,7 +16,6 @@ public class CleanEchoApplicationRunner implements ApplicationRunner {
     @Override
     public void run(ApplicationArguments applicationArguments) throws Exception {
         //开启线程执行（清除/重发消息）
-        System.out.println("开启线程执行:清除/重发消息");
         CleanEchoRunnable runRunnable=new CleanEchoRunnable();
         new Thread(runRunnable).start();
     }
