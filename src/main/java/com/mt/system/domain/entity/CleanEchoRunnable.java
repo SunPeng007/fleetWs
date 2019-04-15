@@ -30,22 +30,24 @@ public class CleanEchoRunnable implements Runnable{
                     for (BaseBuilder baseBuilder : mtEchoMap.values()) {
                         String token = baseBuilder.getReceiveToken();
                         //先判断连接是否打开
-                        if(mtSessionMap.get(token).getSession().isOpen()){
-                            //判断是否需要重发
-                            if(DateUtils.currentCompare(baseBuilder.getPushTime())>ConnectTimeConstant.ANSWER_TIME_CODE){
-                                //判断重发次数是否达到上限
-                                if(baseBuilder.getPustNumber()<PantNumberConstant.PANT_NUMBER_CODE){
-                                    baseBuilder.setPustNumber((baseBuilder.getPustNumber()+1));
-                                    mtSessionMap.get(token).getSession().getBasicRemote().sendText(JSONObject.toJSONString(baseBuilder));
-                                    logger.info(token+"连接重发!");
-                                }else{
-                                    //清除连接
-                                    closeSession(mtEchoMap,mtSessionMap,token);
+                        if(mtSessionMap.get(token)!=null){
+                            if(mtSessionMap.get(token).getSession().isOpen()){
+                                //判断是否需要重发
+                                if(DateUtils.currentCompare(baseBuilder.getPushTime())>ConnectTimeConstant.ANSWER_TIME_CODE){
+                                    //判断重发次数是否达到上限
+                                    if(baseBuilder.getPustNumber()<PantNumberConstant.PANT_NUMBER_CODE){
+                                        baseBuilder.setPustNumber((baseBuilder.getPustNumber()+1));
+                                        mtSessionMap.get(token).getSession().getBasicRemote().sendText(JSONObject.toJSONString(baseBuilder));
+                                        logger.info(token+"连接重发!");
+                                    }else{
+                                        //清除连接
+                                        closeSession(mtEchoMap,mtSessionMap,token);
+                                    }
                                 }
+                            }else{
+                                //清除连接
+                                closeSession(mtEchoMap,mtSessionMap,token);
                             }
-                        }else{
-                            //清除连接
-                            closeSession(mtEchoMap,mtSessionMap,token);
                         }
                     }
                     Thread.sleep(ConnectTimeConstant.SLEEP_TIME_CODE);
