@@ -32,7 +32,9 @@ public class CleanWebSocketTasks {
         ConcurrentHashMap<String,MtSession> mtSessionMap = MtWebSocketServer.getMtSessionMap();
         for (MtSession mtSession:mtSessionMap.values()){
             if(DateUtils.currentCompare(mtSession.getConnectTime())>ConnectTimeConstant.EFFECTIVE_TIME_CODE){
-                mtSessionMap.remove(mtSession.getToken());
+                if(!mtSession.getSession().isOpen()){//连接是否打开
+                    mtSessionMap.remove(mtSession.getToken());
+                }
             }
         }
     }

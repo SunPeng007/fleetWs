@@ -1,6 +1,7 @@
 package com.mt.system.domain.entity;
 
 import com.alibaba.fastjson.JSONObject;
+import com.mt.system.common.util.DateUtils;
 import com.mt.system.domain.constant.ConnectTimeConstant;
 import com.mt.system.domain.constant.PantNumberConstant;
 import com.mt.system.websocket.MtWebSocketServer;

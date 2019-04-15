@@ -143,10 +143,10 @@ public class MtWebSocketServer {
         /*访问企业站点-添加记录*/
         String url=SystemProperties.apiUrl+AsyncUrlConstant.ADD_GROUP_RECORD_URL;//请求接口地址
         Map<String,Object> dataMap =HttpClientTool.mtHttpPost(BeanToMapUtil.convertBean(reqEntity.getData()),url);
-        SynergyGroupRecord sgr=(SynergyGroupRecord)BeanToMapUtil.convertMap(SynergyGroupRecord.class,dataMap);
+        SynergyGroupRecord serEntity=(SynergyGroupRecord)BeanToMapUtil.convertMap(SynergyGroupRecord.class,dataMap);
         /*创建发送消息数据*/
         String uuid = java.util.UUID.randomUUID().toString();//生成uuid 作为流水号
-        BaseBuilder pushNews = new BaseBuilder(uuid,"服务器推送消息!",sgr);
+        BaseBuilder pushNews = new BaseBuilder(uuid,"服务器推送消息!",serEntity);
         pushNews.setResponseType(TypeConstant.RESPONSE_PUSH_TYPE); //设置响应类型
         /*群发消息*/
         Iterator<String> iter = mtSessionMap.keySet().iterator();
