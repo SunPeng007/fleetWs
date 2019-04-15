@@ -7,6 +7,8 @@ import com.mt.system.domain.constant.PantNumberConstant;
 import com.mt.system.websocket.MtWebSocketServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.websocket.Session;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -31,13 +33,14 @@ public class CleanEchoRunnable implements Runnable{
                         String token = baseBuilder.getReceiveToken();
                         //先判断连接是否打开
                         if(mtSessionMap.get(token)!=null){
-                            if(mtSessionMap.get(token).getSession().isOpen()){
+                            Session session=mtSessionMap.get(token).getSession();
+                            if(session.isOpen()){
                                 //判断是否需要重发
                                 if(DateUtils.currentCompare(baseBuilder.getPushTime())>ConnectTimeConstant.ANSWER_TIME_CODE){
                                     //判断重发次数是否达到上限
                                     if(baseBuilder.getPustNumber()<PantNumberConstant.PANT_NUMBER_CODE){
                                         baseBuilder.setPustNumber((baseBuilder.getPustNumber()+1));
-                                        mtSessionMap.get(token).getSession().getBasicRemote().sendText(JSONObject.toJSONString(baseBuilder));
+                                        MtWebSocketServer.mtSendText(session,baseBuilder);
                                         logger.info(token+"连接重发!");
                                     }else{
                                         //清除连接

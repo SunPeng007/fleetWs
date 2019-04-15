@@ -153,6 +153,7 @@ public class MtWebSocketServer {
         String uuid = java.util.UUID.randomUUID().toString();//生成uuid 作为流水号
         BaseBuilder pushNews = new BaseBuilder(uuid,"服务器推送消息!",serEntity);
         pushNews.setResponseType(TypeConstant.RESPONSE_PUSH_TYPE); //设置响应类型
+        pushNews.setPustNumber(1);//发送次数
         /*群发消息*/
         Iterator<String> iter = mtSessionMap.keySet().iterator();
         while(iter.hasNext()){
@@ -185,7 +186,7 @@ public class MtWebSocketServer {
      * @param session
      * @param baseBuilder
      */
-    private void mtSendText(Session session,BaseBuilder baseBuilder){
+    public static void mtSendText(Session session,BaseBuilder baseBuilder){
         try {
             if(session!=null){
                 session.getBasicRemote().sendText(JSONObject.toJSONString(baseBuilder));
