@@ -24,7 +24,7 @@ public class CleanEchoRunnable implements Runnable{
         while (true) {
             synchronized(mtKey){
                 try{
-                    ConcurrentHashMap<String,BaseBuilder> mtEchoMap = MtWebSocketServer.getMtEchoMap();
+                    ConcurrentHashMap<String,BaseBuilder> mtEchoMap = MtWebSocketServer.getMtPushMap();
                     ConcurrentHashMap<String,MtSession> mtSessionMap = MtWebSocketServer.getMtSessionMap();
                     /*判断是否需要重发*/
                     for (BaseBuilder baseBuilder : mtEchoMap.values()) {

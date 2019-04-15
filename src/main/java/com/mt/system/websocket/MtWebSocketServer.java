@@ -39,16 +39,21 @@ public class MtWebSocketServer {
     //记录连接对象
     private static ConcurrentHashMap<String,MtSession> mtSessionMap = new ConcurrentHashMap<String,MtSession>();
 
-    //记录服务器发送消息--未回应对象
-    private static ConcurrentHashMap<String,BaseBuilder> mtEchoMap = new ConcurrentHashMap<String,BaseBuilder>();
+    //记录服务器发送消息
+    private static ConcurrentHashMap<String,BaseBuilder> mtPushMap = new ConcurrentHashMap<String,BaseBuilder>();
+
+    //记录介绍消息
+    private static ConcurrentHashMap<String,BaseBuilder> mtReceiveMap = new ConcurrentHashMap<String,BaseBuilder>();
+
+
 
     //定时任务获取session
     public static ConcurrentHashMap<String,MtSession> getMtSessionMap(){
         return mtSessionMap;
     }
     //线程出现未回应了对象
-    public static ConcurrentHashMap<String,BaseBuilder> getMtEchoMap(){
-        return mtEchoMap;
+    public static ConcurrentHashMap<String,BaseBuilder> getMtPushMap(){
+        return mtPushMap;
     }
 
     /**
@@ -117,10 +122,11 @@ public class MtWebSocketServer {
             //服务器发送消息，客户端回应
             if(TypeConstant.REQUEST_RESPONSE_TYPE.equals(reqEntity.getRequestType())){
                 //移除-服务器发送消息
-                mtEchoMap.remove(token);
+                mtPushMap.remove(token);
             }else{
                 /*给当前连接发消息提示成功*/
-                BaseBuilder resultUs=new BaseBuilder(reqEntity.getSerialNumber(),"发送成功!",null);
+                reqEntity.getData().setSendTime(DateUtils.getDateTime());
+                BaseBuilder resultUs=reqEntity.clone();
                 resultUs.setResponseType(TypeConstant.RESPONSE_SUCCESS_TYPE);//设置响应类型
                 mtSendText(session,JSONObject.toJSONString(resultUs));
                 /*接收到客户端信息-服务端推消息给用户*/
@@ -173,7 +179,7 @@ public class MtWebSocketServer {
         resEntity.setPustToken(pustToken);
         resEntity.setReceiveToken(receiveToken);
         resEntity.setPushTime(DateUtils.currentTimeMilli());
-        mtEchoMap.put(receiveToken,resEntity);
+        mtPushMap.put(receiveToken,resEntity);
     }
     /**
      * 发送消息
