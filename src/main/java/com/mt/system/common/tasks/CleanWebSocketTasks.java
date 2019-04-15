@@ -34,6 +34,7 @@ public class CleanWebSocketTasks {
             if(DateUtils.currentCompare(mtSession.getConnectTime())>ConnectTimeConstant.EFFECTIVE_TIME_CODE){
                 if(!mtSession.getSession().isOpen()){//连接是否打开
                     mtSessionMap.remove(mtSession.getToken());
+                    logger.info("清除连接："+mtSession.getToken());
                 }
             }
         }
