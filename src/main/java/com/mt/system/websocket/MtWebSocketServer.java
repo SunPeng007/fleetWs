@@ -161,7 +161,7 @@ public class MtWebSocketServer {
         while(iter.hasNext()){
             String key=iter.next();
             MtSession mtSession = mtSessionMap.get(key);
-            if(!key.equals(token)){
+            if(!key.equals(token) && mtSession!=null){
                 mtSendText(mtSession.getSession(),pushNews);
                 //记录发送消息给谁
                 BaseBuilder resEntity =pushNews.clone();
@@ -194,6 +194,11 @@ public class MtWebSocketServer {
                 session.getBasicRemote().sendText(JSONObject.toJSONString(baseBuilder));
             }
         } catch (IOException e) {
+            //判断发送次数
+            if(baseBuilder.getPustNumber()==1){
+                baseBuilder.setPustNumber(0);
+            }
+            mtPushMap.put(baseBuilder.getReceiveToken(),baseBuilder);
             e.printStackTrace();
             logger.error("发送消息发生异常："+e);
         }

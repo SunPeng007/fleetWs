@@ -26,18 +26,18 @@ public class CleanEchoRunnable implements Runnable{
         while (true) {
             synchronized(mtKey){
                 try{
-                    ConcurrentHashMap<String,BaseBuilder> mtEchoMap = MtWebSocketServer.getMtPushMap();
+                    ConcurrentHashMap<String,BaseBuilder> mtPushMap = MtWebSocketServer.getMtPushMap();
                     ConcurrentHashMap<String,MtSession> mtSessionMap = MtWebSocketServer.getMtSessionMap();
                     /*判断是否需要重发*/
-                    if(mtEchoMap!=null && mtEchoMap.size()>0){
-                        for (BaseBuilder baseBuilder : mtEchoMap.values()) {
+                    if(mtPushMap!=null && mtPushMap.size()>0){
+                        for (BaseBuilder baseBuilder : mtPushMap.values()) {
                             logger.info("开始检测是否需要重发!");
                             String token = baseBuilder.getReceiveToken();
                             Session session=mtSessionMap.get(token).getSession();
                             //先判断连接是否打开
                             if(!session.isOpen()) {
                                 //清除连接
-                                closeSession(mtEchoMap,mtSessionMap,token);
+                                closeSession(mtPushMap,mtSessionMap,token);
                                 continue;
                             }
                             //判断是否需要重发
@@ -49,7 +49,7 @@ public class CleanEchoRunnable implements Runnable{
                                     logger.info(token+"消息重发!");
                                 }else{
                                     //清除连接
-                                    closeSession(mtEchoMap,mtSessionMap,token);
+                                    closeSession(mtPushMap,mtSessionMap,token);
                                 }
                             }
                         }
@@ -64,13 +64,13 @@ public class CleanEchoRunnable implements Runnable{
     }
     /**
      * 清除连接
-     * @param mtEchoMap
+     * @param mtPushMap
      * @param mtSessionMap
      * @param token
      */
-    public void closeSession(ConcurrentHashMap<String,BaseBuilder> mtEchoMap,ConcurrentHashMap<String,MtSession> mtSessionMap,String token){
+    public void closeSession(ConcurrentHashMap<String,BaseBuilder> mtPushMap,ConcurrentHashMap<String,MtSession> mtSessionMap,String token){
         //清除该未回应信息
-        mtEchoMap.remove(token);
+        mtPushMap.remove(token);
         //清除该未回应信息 -- 的连接
         mtSessionMap.remove(token);
         logger.info("清除连接："+token);
