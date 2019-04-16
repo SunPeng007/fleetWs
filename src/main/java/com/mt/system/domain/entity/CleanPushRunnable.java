@@ -1,6 +1,5 @@
 package com.mt.system.domain.entity;
 
-import com.alibaba.fastjson.JSONObject;
 import com.mt.system.common.util.DateUtils;
 import com.mt.system.domain.constant.ConnectTimeConstant;
 import com.mt.system.domain.constant.PantNumberConstant;
@@ -17,8 +16,8 @@ import java.util.concurrent.ConcurrentHashMap;
  * Date:2019/4/13
  * Time:15:25
  */
-public class CleanEchoRunnable implements Runnable{
-    private static Logger logger = LoggerFactory.getLogger(CleanEchoRunnable.class);
+public class CleanPushRunnable implements Runnable{
+    private static Logger logger = LoggerFactory.getLogger(CleanPushRunnable.class);
     // 创建一个静态钥匙
     private static Object mtKey = "MoTooling";
     @Override

@@ -1,6 +1,6 @@
 package com.mt.system.config;
 
-import com.mt.system.domain.entity.CleanEchoRunnable;
+import com.mt.system.domain.entity.CleanPushRunnable;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
@@ -16,7 +16,7 @@ public class CleanEchoApplicationRunner implements ApplicationRunner {
     @Override
     public void run(ApplicationArguments applicationArguments) throws Exception {
         //开启线程执行（清除/重发消息）
-        CleanEchoRunnable runRunnable=new CleanEchoRunnable();
+        CleanPushRunnable runRunnable=new CleanPushRunnable();
         new Thread(runRunnable).start();
     }
 }
