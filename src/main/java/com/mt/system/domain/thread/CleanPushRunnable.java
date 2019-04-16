@@ -32,26 +32,24 @@ public class CleanPushRunnable implements Runnable{
                     /*判断是否需要重发*/
                     if(mtPushMap!=null && mtPushMap.size()>0){
                         for (BaseBuilder baseBuilder : mtPushMap.values()) {
-                            logger.info("开始检测是否需要重发!");
                             String token = baseBuilder.getReceiveToken();
                             Session session=mtSessionMap.get(token).getSession();
+                            String keyStr=token+baseBuilder.getSerialNumber();
                             //先判断连接是否打开
                             if(!session.isOpen()) {
-                                //清除连接
-                                closeSession(mtPushMap,mtSessionMap,token);
+                                closeSession(mtPushMap,mtSessionMap,token,keyStr);
+                                continue;
+                            }
+                            //判断重发次数是否达到上限
+                            if(baseBuilder.getPustNumber()>=PantNumberConstant.PANT_NUMBER_CODE){
+                                closeSession(mtPushMap,mtSessionMap,token,keyStr);
                                 continue;
                             }
                             //判断是否需要重发
                             if(DateUtils.currentCompare(baseBuilder.getPushTime())>ConnectTimeConstant.ANSWER_TIME_CODE){
-                                //判断重发次数是否达到上限
-                                if(baseBuilder.getPustNumber()<PantNumberConstant.PANT_NUMBER_CODE){
-                                    baseBuilder.setPustNumber((baseBuilder.getPustNumber()+1));
-                                    MtWebSocketServer.mtSendText(session,baseBuilder);
-                                    logger.info(token+"消息重发!");
-                                }else{
-                                    //清除连接
-                                    closeSession(mtPushMap,mtSessionMap,token);
-                                }
+                                baseBuilder.setPustNumber((baseBuilder.getPustNumber()+1));
+                                MtWebSocketServer.mtSendText(session,baseBuilder);
+                                logger.info(token+"消息重发!");
                             }
                         }
                     }
@@ -69,12 +67,11 @@ public class CleanPushRunnable implements Runnable{
      * @param mtSessionMap
      * @param token
      */
-    public void closeSession(ConcurrentHashMap<String,BaseBuilder> mtPushMap,ConcurrentHashMap<String,MtSession> mtSessionMap,String token){
+    public void closeSession(ConcurrentHashMap<String,BaseBuilder> mtPushMap,ConcurrentHashMap<String,MtSession> mtSessionMap,String token,String keyStr){
         //清除该未回应信息
-        mtPushMap.remove(token);
+        mtPushMap.remove(keyStr);
         //清除该未回应信息 -- 的连接
         mtSessionMap.remove(token);
         logger.info("清除连接："+token);
     }
-
 }

@@ -120,7 +120,8 @@ public class MtWebSocketServer {
             //服务器发送消息，客户端回应
             if(TypeConstant.REQUEST_RESPONSE_TYPE.equals(reqEntity.getRequestType())){
                 //移除-服务器发送消息
-                mtPushMap.remove(token);
+                String keyStr=token+reqEntity.getSerialNumber();
+                mtPushMap.remove(keyStr);
             }else{
                 //判断该消息是否发送过
                 if(mtReceiveMap.get(token+reqEntity.getSerialNumber())==null){
@@ -184,7 +185,8 @@ public class MtWebSocketServer {
         resEntity.setPustToken(pustToken);
         resEntity.setReceiveToken(receiveToken);
         resEntity.setPushTime(DateUtils.currentTimeMilli());
-        mtPushMap.put(receiveToken,resEntity);
+        String keyStr=receiveToken+resEntity.getSerialNumber();
+        mtPushMap.put(keyStr,resEntity);
     }
     /**
      * 发送消息
@@ -201,7 +203,8 @@ public class MtWebSocketServer {
             if(baseBuilder.getPustNumber()==1){
                 baseBuilder.setPustNumber(0);
             }
-            mtPushMap.put(baseBuilder.getReceiveToken(),baseBuilder);
+            String keyStr=baseBuilder.getReceiveToken()+baseBuilder.getSerialNumber();
+            mtPushMap.put(keyStr,baseBuilder);
             e.printStackTrace();
             logger.error("发送消息发生异常："+e);
         }
