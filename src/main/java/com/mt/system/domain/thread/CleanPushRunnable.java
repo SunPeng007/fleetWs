@@ -1,8 +1,10 @@
-package com.mt.system.domain.entity;
+package com.mt.system.domain.thread;
 
 import com.mt.system.common.util.DateUtils;
 import com.mt.system.domain.constant.ConnectTimeConstant;
 import com.mt.system.domain.constant.PantNumberConstant;
+import com.mt.system.domain.entity.BaseBuilder;
+import com.mt.system.domain.entity.MtSession;
 import com.mt.system.websocket.MtWebSocketServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
