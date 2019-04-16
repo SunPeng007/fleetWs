@@ -69,6 +69,7 @@ public class BatchController extends BaseController{
      * @param pushList
      */
     private void  cleanPushData(String token,List<Map<String,String>> pushList){
+        logger.info("清除发送（客户端）响应");
         synchronized(pustKey) {
             ConcurrentHashMap<String, BaseBuilder> mtReceiveMap = MtWebSocketServer.getMtReceiveMap();
             if (pushList == null || pushList.size() <= 0) {
@@ -88,6 +89,7 @@ public class BatchController extends BaseController{
      * @param receiveList
      */
     private void cleanReceiveData(String token,List<Map<String,String>> receiveList){
+        logger.info("清除响应（客户端）响应");
         synchronized(receiveKey) {
             ConcurrentHashMap<String,BaseBuilder> mtPushMap = MtWebSocketServer.getMtPushMap();
             if(receiveList==null || receiveList.size()<=0) {
