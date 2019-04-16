@@ -160,6 +160,8 @@ public class MtWebSocketServer {
         BaseBuilder pushNews = new BaseBuilder(uuid,"服务器推送消息!",serEntity);
         pushNews.setResponseType(TypeConstant.RESPONSE_PUSH_TYPE); //设置响应类型
         pushNews.setPustNumber(1);//发送次数
+        Integer timeStamp=Integer.valueOf(serEntity.getSendTime());
+        serEntity.setSendTime(DateUtils.timestampToString(timeStamp,"yyyy-MM-dd HH:mm:ss"));
         /*群发消息*/
         Iterator<String> iter = mtSessionMap.keySet().iterator();
         while(iter.hasNext()){
