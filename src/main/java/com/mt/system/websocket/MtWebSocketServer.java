@@ -45,13 +45,14 @@ public class MtWebSocketServer {
     //记录接收消息
     private static ConcurrentHashMap<String,BaseBuilder> mtReceiveMap = new ConcurrentHashMap<String,BaseBuilder>();
 
-    //定时任务获取session
     public static ConcurrentHashMap<String,MtSession> getMtSessionMap(){
         return mtSessionMap;
     }
-    //记录服务器发送消息
     public static ConcurrentHashMap<String,BaseBuilder> getMtPushMap(){
         return mtPushMap;
+    }
+    public static ConcurrentHashMap<String,BaseBuilder> getMtReceiveMap(){
+        return mtReceiveMap;
     }
 
     /**
@@ -124,6 +125,8 @@ public class MtWebSocketServer {
                 //判断该消息是否发送过
                 if(mtReceiveMap.get(token+reqEntity.getSerialNumber())==null){
                     reqEntity.getData().setSendTime(DateUtils.getDateTime());
+                    reqEntity.setPushTime(DateUtils.currentTimeMilli());
+                    reqEntity.setPustToken(token);//发送人token
                     //添加接收消息
                     mtReceiveMap.put(token+reqEntity.getSerialNumber(),reqEntity);
                     /*接收到客户端信息-服务端推消息给用户*/

@@ -19,11 +19,11 @@ import java.util.concurrent.ConcurrentHashMap;
 public class CleanPushRunnable implements Runnable{
     private static Logger logger = LoggerFactory.getLogger(CleanPushRunnable.class);
     // 创建一个静态钥匙
-    private static Object mtKey = "MoTooling";
+    private static Object mtPushKey = "MoTooling";
     @Override
     public void run() {
         while (true) {
-            synchronized(mtKey){
+            synchronized(mtPushKey){
                 try{
                     ConcurrentHashMap<String,BaseBuilder> mtPushMap = MtWebSocketServer.getMtPushMap();
                     ConcurrentHashMap<String,MtSession> mtSessionMap = MtWebSocketServer.getMtSessionMap();
@@ -53,7 +53,7 @@ public class CleanPushRunnable implements Runnable{
                             }
                         }
                     }
-                    Thread.sleep(ConnectTimeConstant.SLEEP_TIME_CODE);
+                    Thread.sleep(ConnectTimeConstant.CLOSE_PUSH_TIME_CODE);
                 }catch (Exception e) {
                     e.printStackTrace();
                     logger.error("重发异常:"+e);
