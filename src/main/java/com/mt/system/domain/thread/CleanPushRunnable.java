@@ -5,11 +5,13 @@ import com.mt.system.domain.constant.ConnectTimeConstant;
 import com.mt.system.domain.constant.PantNumberConstant;
 import com.mt.system.domain.entity.BaseBuilder;
 import com.mt.system.domain.entity.MtSession;
+import com.mt.system.websocket.MtContainerUtil;
 import com.mt.system.websocket.MtWebSocketServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.websocket.Session;
+import java.util.Iterator;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -27,29 +29,39 @@ public class CleanPushRunnable implements Runnable{
         while (true) {
             synchronized(mtPushKey){
                 try{
-                    ConcurrentHashMap<String,BaseBuilder> mtPushMap = MtWebSocketServer.getMtPushMap();
-                    ConcurrentHashMap<String,MtSession> mtSessionMap = MtWebSocketServer.getMtSessionMap();
+                    ConcurrentHashMap<String,ConcurrentHashMap<String,ConcurrentHashMap<String,BaseBuilder>>> mtPushMap = MtContainerUtil.getMtPushMap();
+                    ConcurrentHashMap<String,ConcurrentHashMap<String,ConcurrentHashMap<String,MtSession>>> mtSessionMap = MtContainerUtil.getMtSessionMap();
                     /*判断是否需要重发*/
-                    if(mtPushMap!=null && mtPushMap.size()>0){
-                        for (BaseBuilder baseBuilder : mtPushMap.values()) {
-                            String token = baseBuilder.getReceiveToken();
-                            Session session=mtSessionMap.get(token).getSession();
-                            String keyStr=token+baseBuilder.getSerialNumber();
-                            //先判断连接是否打开
-                            if(!session.isOpen()) {
-                                closeSession(mtPushMap,mtSessionMap,token,keyStr);
-                                continue;
-                            }
-                            //判断重发次数是否达到上限
-                            if(baseBuilder.getPustNumber()>=PantNumberConstant.PANT_NUMBER_CODE){
-                                closeSession(mtPushMap,mtSessionMap,token,keyStr);
-                                continue;
-                            }
-                            //判断是否需要重发
-                            if(DateUtils.currentCompare(baseBuilder.getPushTime())>ConnectTimeConstant.ANSWER_TIME_CODE){
-                                baseBuilder.setPustNumber((baseBuilder.getPustNumber()+1));
-                                MtWebSocketServer.mtSendText(session,baseBuilder);
-                                logger.info(token+"消息重发!");
+                    Iterator<String> comIter = mtPushMap.keySet().iterator();
+                    while(comIter.hasNext()) {
+                        String companyId = comIter.next();//公司id
+                        ConcurrentHashMap<String,ConcurrentHashMap<String,BaseBuilder>> groupSession=mtPushMap.get(companyId);
+                        Iterator<String> groupIter = groupSession.keySet().iterator();
+                        while(comIter.hasNext()) {
+                            String groupId = comIter.next();//群id
+                            ConcurrentHashMap<String,BaseBuilder> contSession =groupSession.get(groupId);
+                            for (BaseBuilder baseBuilder : contSession.values()) {
+                                String token = baseBuilder.getReceiveToken();//token
+                                Session session=MtContainerUtil.getMtSessionMap(companyId,groupId,token).getSession();
+                                String keyStr=token+baseBuilder.getSerialNumber();
+                                //先判断连接是否打开
+                                if(!session.isOpen()) {
+                                    MtContainerUtil.mtPushRemove(companyId,groupId,keyStr);
+                                    MtContainerUtil.mtSessionMapRemove(companyId,groupId,token);
+                                    continue;
+                                }
+                                //判断重发次数是否达到上限
+                                if(baseBuilder.getPustNumber()>=PantNumberConstant.PANT_NUMBER_CODE){
+                                    MtContainerUtil.mtPushRemove(companyId,groupId,keyStr);
+                                    MtContainerUtil.mtSessionMapRemove(companyId,groupId,token);
+                                    continue;
+                                }
+                                //判断是否需要重发
+                                if(DateUtils.currentCompare(baseBuilder.getPushTime())>ConnectTimeConstant.ANSWER_TIME_CODE){
+                                    baseBuilder.setPustNumber((baseBuilder.getPustNumber()+1));
+                                    MtWebSocketServer.mtSendText(session,companyId,groupId,baseBuilder);
+                                    logger.info(token+"消息重发!");
+                                }
                             }
                         }
                     }
@@ -60,18 +72,5 @@ public class CleanPushRunnable implements Runnable{
                 }
             }
         }
-    }
-    /**
-     * 清除连接
-     * @param mtPushMap
-     * @param mtSessionMap
-     * @param token
-     */
-    public void closeSession(ConcurrentHashMap<String,BaseBuilder> mtPushMap,ConcurrentHashMap<String,MtSession> mtSessionMap,String token,String keyStr){
-        //清除该未回应信息
-        mtPushMap.remove(keyStr);
-        //清除该未回应信息 -- 的连接
-        mtSessionMap.remove(token);
-        logger.info("清除连接："+token);
     }
 }

@@ -3,6 +3,7 @@ package com.mt.system.controller;
 import com.mt.system.common.result.ResponseBuilder;
 import com.mt.system.common.util.RSAUtils4Client;
 import com.mt.system.domain.entity.BaseBuilder;
+import com.mt.system.websocket.MtContainerUtil;
 import com.mt.system.websocket.MtWebSocketServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,13 +44,17 @@ public class BatchController extends BaseController{
                         Map<String, Object> dataMap = (Map<String, Object>) paramMap.get("data");
                         if (dataMap.get("pushList") != null) {//清除发送
                             List<Map<String,String>> pushList=(List<Map<String,String>>)dataMap.get("pushList");
+                            String companyId=paramMap.get("companyId").toString();
+                            String groupId=paramMap.get("groupId").toString();
                             String token=paramMap.get("token").toString();
-                            cleanPushData(token,pushList);
+                            cleanPushData(companyId,groupId,token,pushList);
                         }
                         if (dataMap.get("receiveList") != null) {//清除接收
                             List<Map<String,String>> receiveList=(List<Map<String,String>>)dataMap.get("receiveList");
+                            String companyId=paramMap.get("companyId").toString();
+                            String groupId=paramMap.get("groupId").toString();
                             String token=paramMap.get("token").toString();
-                            cleanReceiveData(token,receiveList);
+                            cleanReceiveData(companyId,groupId,token,receiveList);
                         }
                         return resData(new ResponseBuilder().setSuccessResult(null, "批量响应成功!").encryptionResult());
                     }
@@ -68,17 +73,17 @@ public class BatchController extends BaseController{
      * @param token
      * @param pushList
      */
-    private void  cleanPushData(String token,List<Map<String,String>> pushList){
+    private void  cleanPushData(String companyId,String groupId,String token,List<Map<String,String>> pushList){
         logger.info("清除发送（客户端）响应");
         synchronized(pustKey) {
-            ConcurrentHashMap<String, BaseBuilder> mtReceiveMap = MtWebSocketServer.getMtReceiveMap();
             if (pushList == null || pushList.size() <= 0) {
                 return;
             }
             for (Map<String, String> tempMap : pushList) {
                 String keyToken = token + tempMap.get("serialNumber");
-                if (mtReceiveMap.get(keyToken) != null) {
-                    mtReceiveMap.remove(keyToken);
+                BaseBuilder builder =MtContainerUtil.getMtReceiveMap(companyId,groupId,token);
+                if (builder != null) {
+                    MtContainerUtil.mtReceiveMapRemove(companyId,groupId,token);
                 }
             }
         }
@@ -88,17 +93,18 @@ public class BatchController extends BaseController{
      * @param token
      * @param receiveList
      */
-    private void cleanReceiveData(String token,List<Map<String,String>> receiveList){
+    private void cleanReceiveData(String companyId,String groupId,String token,List<Map<String,String>> receiveList){
         logger.info("清除响应（客户端）响应");
         synchronized(receiveKey) {
-            ConcurrentHashMap<String,BaseBuilder> mtPushMap = MtWebSocketServer.getMtPushMap();
             if(receiveList==null || receiveList.size()<=0) {
                 return;
             }
+            ConcurrentHashMap<String,ConcurrentHashMap<String,ConcurrentHashMap<String,BaseBuilder>>> mtPushMap = MtContainerUtil.getMtPushMap();
             for (Map<String, String> tempMap : receiveList){
                 String keyToken = token + tempMap.get("serialNumber");
-                if (mtPushMap.get(keyToken) != null) {
-                    mtPushMap.remove(keyToken);
+                BaseBuilder builder = MtContainerUtil.getMtPushMap(companyId,groupId,keyToken);
+                if (builder != null) {
+                    MtContainerUtil.mtPushRemove(companyId,groupId,keyToken);
                 }
             }
         }

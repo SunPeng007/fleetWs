@@ -3,7 +3,7 @@ package com.mt.system.domain.thread;
 import com.mt.system.common.util.DateUtils;
 import com.mt.system.domain.constant.ConnectTimeConstant;
 import com.mt.system.domain.entity.BaseBuilder;
-import com.mt.system.websocket.MtWebSocketServer;
+import com.mt.system.websocket.MtContainerUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,13 +24,14 @@ public class CleanReceiveRunnable implements Runnable {
         while (true) {
             synchronized(mtReceiveKey){
                 try{
-                    ConcurrentHashMap<String,BaseBuilder> mtReceiveMap = MtWebSocketServer.getMtReceiveMap();
-                    /*判断是否清除*/
-                    if(mtReceiveMap!=null && mtReceiveMap.size()>0) {
-                        for (BaseBuilder baseBuilder : mtReceiveMap.values()) {
-                            if(DateUtils.currentCompare(baseBuilder.getPushTime())>ConnectTimeConstant.CLOSE_TIME_DATA_CODE){
-                                String token = baseBuilder.getPustToken()+baseBuilder.getSerialNumber();
-                                mtReceiveMap.remove(token);
+                    ConcurrentHashMap<String,ConcurrentHashMap<String,ConcurrentHashMap<String,BaseBuilder>>> mtReceiveMap = MtContainerUtil.getMtReceiveMap();
+                    for (ConcurrentHashMap<String,ConcurrentHashMap<String,BaseBuilder>> groupSession : mtReceiveMap.values()){
+                        for (ConcurrentHashMap<String,BaseBuilder> contSession : groupSession.values()){
+                            for (BaseBuilder baseBuilder : contSession.values()) {
+                                if(DateUtils.currentCompare(baseBuilder.getPushTime())>ConnectTimeConstant.CLOSE_TIME_DATA_CODE){
+                                    String token = baseBuilder.getPustToken()+baseBuilder.getSerialNumber();
+                                    mtReceiveMap.remove(token);
+                                }
                             }
                         }
                     }

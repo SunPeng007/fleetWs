@@ -10,7 +10,6 @@ import com.mt.system.domain.constant.TypeConstant;
 import com.mt.system.domain.entity.BaseBuilder;
 import com.mt.system.domain.entity.MtSession;
 import com.mt.system.domain.entity.SynergyGroupRecord;
-import com.mt.system.domain.properties.SystemProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -30,41 +29,24 @@ import java.util.concurrent.ConcurrentHashMap;
  *  注解是一个类层次的注解，它的功能主要是将目前的类定义成一个websocket服务器端,
  *  注解的值将被用于监听用户连接的终端访问URL地址,客户端可以通过这个URL来连接到WebSocket服务器端
  *  使用websocket的核心，就是一系列的websocket注解，@ServerEndpoint是注册在类上面开启。
+ *  ConcurrentHashMap是线程安全的，而HashMap是线程不安全的
  */
 @Component
-@ServerEndpoint(value = "/mtwebsocket/{token}")
+@ServerEndpoint(value = "/mtwebsocket/{companyId}/{groupId}/{token}/{webUrl}")
 public class MtWebSocketServer {
     private static Logger logger = LoggerFactory.getLogger(MtWebSocketServer.class);
-    //ConcurrentHashMap是线程安全的，而HashMap是线程不安全的。
-    //记录连接对象
-    private static ConcurrentHashMap<String,MtSession> mtSessionMap = new ConcurrentHashMap<String,MtSession>();
-
-    //记录服务器发送消息
-    private static ConcurrentHashMap<String,BaseBuilder> mtPushMap = new ConcurrentHashMap<String,BaseBuilder>();
-
-    //记录接收消息
-    private static ConcurrentHashMap<String,BaseBuilder> mtReceiveMap = new ConcurrentHashMap<String,BaseBuilder>();
-
-    public static ConcurrentHashMap<String,MtSession> getMtSessionMap(){
-        return mtSessionMap;
-    }
-    public static ConcurrentHashMap<String,BaseBuilder> getMtPushMap(){
-        return mtPushMap;
-    }
-    public static ConcurrentHashMap<String,BaseBuilder> getMtReceiveMap(){
-        return mtReceiveMap;
-    }
-
     /**
      * 连接建立成功调用的方法
      * @param session
      * @param token
      */
     @OnOpen
-    public void onOpen(Session session,@PathParam("token") String token) {
+    public void onOpen(Session session,
+                       @PathParam("companyId")String companyId,
+                       @PathParam("token") String token,
+                       @PathParam("groupId") String groupId) {
         try{
-            //连接成功-加人
-            mtSessionMap.put(token, new MtSession(session,token,DateUtils.currentTimeMilli()));
+            MtContainerUtil.mtSessionMapPut(companyId,groupId,token,session);
             logger.info("连接成功调用!");
         }catch (Exception e){
             e.printStackTrace();
@@ -78,10 +60,13 @@ public class MtWebSocketServer {
      * @throws IOException
      */
     @OnClose
-    public void onClose(Session session,@PathParam("token") String token)throws IOException {
+    public void onClose(Session session,
+                        @PathParam("companyId")String companyId,
+                        @PathParam("groupId") String groupId,
+                        @PathParam("token") String token)throws IOException {
         try{
             //移除当前连接
-            mtSessionMap.remove(token);
+            MtContainerUtil.mtSessionMapRemove(companyId,groupId,token);
             logger.info("连接关闭调用!");
         }catch (Exception e){
             e.printStackTrace();
@@ -94,10 +79,13 @@ public class MtWebSocketServer {
      * @param error
      */
     @OnError
-    public void onError(Session session, Throwable error,@PathParam("token") String token) {
+    public void onError(Session session, Throwable error,
+                        @PathParam("companyId")String companyId,
+                        @PathParam("groupId") String groupId,
+                        @PathParam("token") String token) {
         try{
             //移除当前连接
-            mtSessionMap.remove(token);
+            MtContainerUtil.mtSessionMapRemove(companyId,groupId,token);
             logger.info("发生错误时调用!");
         }catch (Exception e){
             e.printStackTrace();
@@ -107,13 +95,24 @@ public class MtWebSocketServer {
     /**
      * 收到客户端消息后调用的方法
      * @param message
+     * @param companyId
+     * @param groupId
      * @param token
      */
     @OnMessage
-    public void onMessage(String message,Session session,@PathParam("token") String token) {
+    public void onMessage(String message,Session session,
+                          @PathParam("companyId")String companyId,
+                          @PathParam("groupId") String groupId,
+                          @PathParam("token") String token,
+                          @PathParam("webUrl") String webUrl) {
         try{
             //更新当前连接时间
-            mtSessionMap.get(token).setConnectTime(DateUtils.currentTimeMilli());
+            MtSession  mtSession = MtContainerUtil.getMtSessionMap(companyId,groupId,token);
+            if(mtSession!=null){
+                mtSession.setConnectTime(DateUtils.currentTimeMilli());
+            }else{
+                MtContainerUtil.mtSessionMapPut(companyId,groupId,token,session);
+            }
             //判断回应类型
             //接收数据，-- 调用企业站点接口添加记录
             BaseBuilder reqEntity = JsonUtil.toObject(message,BaseBuilder.class);
@@ -121,21 +120,22 @@ public class MtWebSocketServer {
             if(TypeConstant.REQUEST_RESPONSE_TYPE.equals(reqEntity.getRequestType())){
                 //移除-服务器发送消息
                 String keyStr=token+reqEntity.getSerialNumber();
-                mtPushMap.remove(keyStr);
+                MtContainerUtil.mtPushRemove(companyId,groupId,token);
             }else{
                 //判断该消息是否发送过
-                if(mtReceiveMap.get(token+reqEntity.getSerialNumber())==null){
+                BaseBuilder builder = MtContainerUtil.getMtReceiveMap(companyId,groupId,token+reqEntity.getSerialNumber());
+                if(builder==null){
                     reqEntity.getData().setSendTime(DateUtils.getDateTime());
                     reqEntity.setPushTime(DateUtils.currentTimeMilli());
                     reqEntity.setPustToken(token);//发送人token
                     //添加接收消息
-                    mtReceiveMap.put(token+reqEntity.getSerialNumber(),reqEntity);
+                    MtContainerUtil.mtReceiveMapPut(companyId,groupId,token+reqEntity.getSerialNumber(),reqEntity);
                     /*接收到客户端信息-服务端推消息给用户*/
-                    servicePushUser(reqEntity,token);
+                    servicePushUser(webUrl,reqEntity,companyId,token,groupId);
                     /*给当前连接发消息提示成功*/
                     BaseBuilder resultUs=reqEntity.clone();
                     resultUs.setResponseType(TypeConstant.RESPONSE_SUCCESS_TYPE);//设置响应类型
-                    mtSendText(session,resultUs);
+                    mtSendText(session,companyId,groupId,resultUs);
                 }
             }
         }catch (Exception e){
@@ -146,13 +146,15 @@ public class MtWebSocketServer {
     /**
      * 接收到客户端信息-服务端推消息给用户
      * @param reqEntity
+     * @param companyId
      * @param token
+     * @param groupId
      * @throws Exception
      */
-    public void servicePushUser(BaseBuilder reqEntity,String token)throws Exception{
+    public void servicePushUser(String webUrl,BaseBuilder reqEntity,String companyId,String token,String groupId)throws Exception{
         reqEntity.getData().setDeviceType(reqEntity.getRequestType());
         /*访问企业站点-添加记录*/
-        String url=SystemProperties.apiUrl+AsyncUrlConstant.ADD_GROUP_RECORD_URL;//请求接口地址
+        String url=webUrl+AsyncUrlConstant.ADD_GROUP_RECORD_URL;//请求接口地址
         Map<String,Object> dataMap =HttpClientTool.mtHttpPost(BeanToMapUtil.convertBean(reqEntity.getData()),url);
         SynergyGroupRecord serEntity=(SynergyGroupRecord)BeanToMapUtil.convertMap(SynergyGroupRecord.class,dataMap);
         /*创建发送消息数据*/
@@ -163,15 +165,18 @@ public class MtWebSocketServer {
         Integer timeStamp=Integer.valueOf(serEntity.getSendTime());
         serEntity.setSendTime(DateUtils.timestampToString(timeStamp,"yyyy-MM-dd HH:mm:ss"));
         /*群发消息*/
-        Iterator<String> iter = mtSessionMap.keySet().iterator();
-        while(iter.hasNext()){
-            String key=iter.next();
-            MtSession mtSession = mtSessionMap.get(key);
-            if(!key.equals(token) && mtSession!=null){
-                mtSendText(mtSession.getSession(),pushNews);
-                //记录发送消息给谁
-                BaseBuilder resEntity =pushNews.clone();
-                addMtEcho(resEntity,1,token,key);
+        ConcurrentHashMap<String,MtSession>  mtSesMap = MtContainerUtil.getMtSessionMap(companyId,groupId);
+        if(mtSesMap!=null){
+            Iterator<String> iter = mtSesMap.keySet().iterator();
+            while(iter.hasNext()){
+                String key=iter.next();
+                MtSession mtSes =MtContainerUtil.getMtSessionMap(companyId,groupId,key);
+                if(!key.equals(token) && mtSes!=null){
+                    mtSendText(mtSes.getSession(),companyId,groupId,pushNews);
+                    //记录发送消息给谁
+                    BaseBuilder resEntity =pushNews.clone();
+                    addMtEcho(resEntity,1,token,companyId,groupId,key);
+                }
             }
         }
     }
@@ -182,20 +187,20 @@ public class MtWebSocketServer {
      * @param pustToken
      * @param receiveToken
      */
-    private void addMtEcho(BaseBuilder resEntity,int pustNumber,String pustToken,String receiveToken){
+    private void addMtEcho(BaseBuilder resEntity,int pustNumber,String pustToken,String companyId,String groupId,String receiveToken){
         resEntity.setPustNumber(pustNumber);
         resEntity.setPustToken(pustToken);
         resEntity.setReceiveToken(receiveToken);
         resEntity.setPushTime(DateUtils.currentTimeMilli());
         String keyStr=receiveToken+resEntity.getSerialNumber();
-        mtPushMap.put(keyStr,resEntity);
+        MtContainerUtil.mtPushMapPut(companyId,groupId,keyStr,resEntity);
     }
     /**
      * 发送消息
      * @param session
      * @param baseBuilder
      */
-    public static void mtSendText(Session session,BaseBuilder baseBuilder){
+    public static void mtSendText(Session session,String companyId,String groupId,BaseBuilder baseBuilder){
         try {
             if(session!=null){
                 session.getBasicRemote().sendText(JSONObject.toJSONString(baseBuilder));
@@ -206,7 +211,7 @@ public class MtWebSocketServer {
                 baseBuilder.setPustNumber(0);
             }
             String keyStr=baseBuilder.getReceiveToken()+baseBuilder.getSerialNumber();
-            mtPushMap.put(keyStr,baseBuilder);
+            MtContainerUtil.mtPushMapPut(companyId,groupId,keyStr,baseBuilder);
             e.printStackTrace();
             logger.error("发送消息发生异常："+e);
         }

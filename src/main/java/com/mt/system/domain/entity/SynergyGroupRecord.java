@@ -1,7 +1,5 @@
 package com.mt.system.domain.entity;
 
-import java.util.Date;
-
 public class SynergyGroupRecord {
     private Long id;
 

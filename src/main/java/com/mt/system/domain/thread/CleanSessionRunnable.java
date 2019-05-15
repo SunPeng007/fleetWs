@@ -3,6 +3,7 @@ package com.mt.system.domain.thread;
 import com.mt.system.common.util.DateUtils;
 import com.mt.system.domain.constant.ConnectTimeConstant;
 import com.mt.system.domain.entity.MtSession;
+import com.mt.system.websocket.MtContainerUtil;
 import com.mt.system.websocket.MtWebSocketServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,12 +25,16 @@ public class CleanSessionRunnable implements Runnable{
         while (true) {
             synchronized(mtSessionKey){
                 try{
-                    ConcurrentHashMap<String,MtSession> mtSessionMap = MtWebSocketServer.getMtSessionMap();
-                    for (MtSession mtSession:mtSessionMap.values()){
-                        if(DateUtils.currentCompare(mtSession.getConnectTime())>ConnectTimeConstant.EFFECTIVE_TIME_CODE){
-                            if(!mtSession.getSession().isOpen()){//连接是否打开
-                                mtSessionMap.remove(mtSession.getToken());
-                                logger.info("清除连接："+mtSession.getToken());
+                    ConcurrentHashMap<String,ConcurrentHashMap<String,ConcurrentHashMap<String,MtSession>>> mtSessionMap = MtContainerUtil.getMtSessionMap();
+                    for (ConcurrentHashMap<String,ConcurrentHashMap<String,MtSession>> groupSession:mtSessionMap.values()){
+                        for (ConcurrentHashMap<String,MtSession> contSession:groupSession.values()){
+                            for (MtSession mtSession:contSession.values()){
+                                if(DateUtils.currentCompare(mtSession.getConnectTime())>ConnectTimeConstant.EFFECTIVE_TIME_CODE){
+                                    if(!mtSession.getSession().isOpen()){//连接是否打开
+                                        mtSessionMap.remove(mtSession.getToken());
+                                        logger.info("清除连接："+mtSession.getToken());
+                                    }
+                                }
                             }
                         }
                     }
