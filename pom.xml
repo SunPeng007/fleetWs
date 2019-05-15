@@ -54,7 +54,7 @@
 
     <build>
         <!-- 打成jar包的名称 -->
-        <finalName>mtwebsocketboot</finalName>
+        <finalName>mtwebsocket</finalName>
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
