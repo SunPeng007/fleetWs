@@ -10,5 +10,5 @@ public interface AsyncUrlConstant {
     /**
      * 添加记录
      */
-    String ADD_GROUP_RECORD_URL="/synergy/addRecord";
+    String ADD_GROUP_RECORD_URL="/imApi/synergy/addRecord";
 }

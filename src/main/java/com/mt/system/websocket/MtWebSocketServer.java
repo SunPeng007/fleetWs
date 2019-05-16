@@ -1,9 +1,9 @@
 package com.mt.system.websocket;
 
 import com.alibaba.fastjson.JSONObject;
-import com.mt.system.common.code.HttpClientTool;
 import com.mt.system.common.util.BeanToMapUtil;
 import com.mt.system.common.util.DateUtils;
+import com.mt.system.common.util.HttpRequestUtils;
 import com.mt.system.common.util.JsonUtil;
 import com.mt.system.domain.constant.AsyncUrlConstant;
 import com.mt.system.domain.constant.TypeConstant;
@@ -153,8 +153,15 @@ public class MtWebSocketServer {
     public void servicePushUser(String webUrl,BaseBuilder reqEntity,String companyId,String token,String groupId)throws Exception{
         reqEntity.getData().setDeviceType(reqEntity.getRequestType());
         /*访问企业站点-添加记录*/
+        //访问企业站点
         String url="http://"+webUrl.trim()+AsyncUrlConstant.ADD_GROUP_RECORD_URL;//请求接口地址
-        Map<String,Object> dataMap =HttpClientTool.mtHttpPost(BeanToMapUtil.convertBean(reqEntity.getData()),url);
+        Map<String,Object> resMap = HttpRequestUtils.httpPost(url,HttpRequestUtils.getBuEncryptionParam(BeanToMapUtil.convertBean(reqEntity.getData())));
+        //响应结果
+        Map<String,Object> resParam=HttpRequestUtils.getBuDecryptionParam(resMap);
+        if(!"000000".equals(resParam.get("code").toString())) {
+            throw new RuntimeException("添加聊天记录异常!");
+        }
+        Map<String, Object> dataMap = (Map<String, Object>) resParam.get("data");
         SynergyGroupRecord serEntity=(SynergyGroupRecord)BeanToMapUtil.convertMap(SynergyGroupRecord.class,dataMap);
         /*创建发送消息数据*/
         String uuid = java.util.UUID.randomUUID().toString();//生成uuid 作为流水号
