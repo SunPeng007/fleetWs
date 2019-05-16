@@ -8,9 +8,10 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Created with IDEA
- * author: Alnwick
+ * author: chenpan
  * Date:2019/5/15
  * Time:15:27
+ *  ConcurrentHashMap是线程安全的，而HashMap是线程不安全的
  */
 public class MtContainerUtil {
 

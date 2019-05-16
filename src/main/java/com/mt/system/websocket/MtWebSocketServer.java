@@ -29,7 +29,6 @@ import java.util.concurrent.ConcurrentHashMap;
  *  注解是一个类层次的注解，它的功能主要是将目前的类定义成一个websocket服务器端,
  *  注解的值将被用于监听用户连接的终端访问URL地址,客户端可以通过这个URL来连接到WebSocket服务器端
  *  使用websocket的核心，就是一系列的websocket注解，@ServerEndpoint是注册在类上面开启。
- *  ConcurrentHashMap是线程安全的，而HashMap是线程不安全的
  */
 @Component
 @ServerEndpoint(value = "/mtwebsocket/{companyId}/{groupId}/{token}/{webUrl}")
