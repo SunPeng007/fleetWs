@@ -153,7 +153,7 @@ public class MtWebSocketServer {
     public void servicePushUser(String webUrl,BaseBuilder reqEntity,String companyId,String token,String groupId)throws Exception{
         reqEntity.getData().setDeviceType(reqEntity.getRequestType());
         /*访问企业站点-添加记录*/
-        String url=webUrl+AsyncUrlConstant.ADD_GROUP_RECORD_URL;//请求接口地址
+        String url="http://"+webUrl.trim()+AsyncUrlConstant.ADD_GROUP_RECORD_URL;//请求接口地址
         Map<String,Object> dataMap =HttpClientTool.mtHttpPost(BeanToMapUtil.convertBean(reqEntity.getData()),url);
         SynergyGroupRecord serEntity=(SynergyGroupRecord)BeanToMapUtil.convertMap(SynergyGroupRecord.class,dataMap);
         /*创建发送消息数据*/
