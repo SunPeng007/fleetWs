@@ -81,7 +81,7 @@ public class BatchController extends BaseController{
             }
             for (Map<String, String> tempMap : pushList) {
                 String keyToken = token + tempMap.get("serialNumber");
-                BaseBuilder builder =MtContainerUtil.getMtReceiveMap(companyId,groupId,token);
+                BaseBuilder builder =MtContainerUtil.getMtReceiveMap(companyId,groupId,keyToken);
                 if (builder != null) {
                     MtContainerUtil.mtReceiveMapRemove(companyId,groupId,token);
                 }
