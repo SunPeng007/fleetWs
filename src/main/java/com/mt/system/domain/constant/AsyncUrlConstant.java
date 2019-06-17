@@ -7,5 +7,8 @@ package com.mt.system.domain.constant;
  * Time:15:14
  */
 public interface AsyncUrlConstant {
-    String SYNERGY_GROUP_RECORD_URL="/synergy/addRecord";
+    /**
+     * 添加记录
+     */
+    String ADD_GROUP_RECORD_URL="/imApi/synergy/addRecord";
 }

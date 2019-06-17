@@ -7,7 +7,7 @@ import com.alibaba.fastjson.serializer.SerializerFeature;
 
 /**
  * JSON转换工具类
- * Created by tangmingkun on 4/27/18.
+ * Created by chenpan on 4/27/18.
  */
 public class JsonUtil {
 

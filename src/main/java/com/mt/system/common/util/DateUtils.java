@@ -1,5 +1,7 @@
 package com.mt.system.common.util;
 
+import java.sql.Timestamp;
+import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -8,7 +10,7 @@ import java.util.Date;
 /**
  * 日期处理工具类
  * 
- * @author tangmignkun
+ * @author chenpan
  */
 
 public class DateUtils
@@ -130,6 +132,27 @@ public class DateUtils
 	}
 
 	/**
+	 * 10位int型的时间戳转换为String(yyyy-MM-dd HH:mm:ss)
+	 * @param time
+	 * @return
+	 */
+	public static String timestampToString(Integer time,String pattern){
+		//int转long时，先进行转型再进行计算，否则会是计算结束后在转型
+		long temp = (long)time*1000;
+		Timestamp ts = new Timestamp(temp);
+		String tsStr = "";
+		DateFormat dateFormat = new SimpleDateFormat(pattern);
+		try {
+			//方法一
+			tsStr = dateFormat.format(ts);
+			System.out.println(tsStr);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return tsStr;
+	}
+
+	/**
 	 * 时间字符串（自定义格式）转时间字符串（自定义格式）
 	 * @param time 时间字符串
 	 * @param oldPattern 格式
@@ -204,5 +227,27 @@ public class DateUtils
 			return null;
 		}
 	}
+	/**
+	 * 获取系统时间的时间戳 精确到毫秒
+	 */
+	public static long currentTimeMilli(){
+		try
+		{
+			return System.currentTimeMillis();
+		}
+		catch (Exception e)
+		{
+			return -1;
+		}
+	}
 
+	/**
+	 * 跟当前时间 差多少秒
+	 * @param millis
+	 * @return
+	 */
+	public static long currentCompare(Long millis){
+		Long space = (System.currentTimeMillis() - millis) / 1000;
+		return space;
+	}
 }
