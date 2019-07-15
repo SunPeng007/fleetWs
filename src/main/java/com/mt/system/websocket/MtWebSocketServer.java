@@ -105,6 +105,7 @@ public class MtWebSocketServer {
                           @PathParam("token") String token,
                           @PathParam("webUrl") String webUrl) {
         try{
+            logger.info("收到客户端消息!");
             //更新当前连接时间
             MtSession  mtSession = MtContainerUtil.getMtSessionMap(companyId,groupId,token);
             if(mtSession!=null){
