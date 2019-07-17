@@ -131,10 +131,12 @@ public class MtWebSocketServer {
                     //添加接收消息
                     MtContainerUtil.mtReceiveMapPut(companyId,groupId,token+reqEntity.getSerialNumber(),reqEntity);
                     /*接收到客户端信息-服务端推消息给用户*/
-                    servicePushUser(webUrl,reqEntity,companyId,token,groupId);
+                    SynergyGroupRecord serEntity=servicePushUser(webUrl,reqEntity,companyId,token,groupId);
+                    serEntity.setSendTime(reqEntity.getData().getSendTime());
                     /*给当前连接发消息提示成功*/
                     BaseBuilder resultUs=reqEntity.clone();
                     resultUs.setResponseType(TypeConstant.RESPONSE_SUCCESS_TYPE);//设置响应类型
+                    resultUs.setData(serEntity);
                     mtSendText(session,companyId,groupId,resultUs);
                 }
             }
@@ -151,7 +153,7 @@ public class MtWebSocketServer {
      * @param groupId
      * @throws Exception
      */
-    public void servicePushUser(String webUrl,BaseBuilder reqEntity,String companyId,String token,String groupId)throws Exception{
+    public SynergyGroupRecord servicePushUser(String webUrl,BaseBuilder reqEntity,String companyId,String token,String groupId)throws Exception{
         reqEntity.getData().setDeviceType(reqEntity.getRequestType());
         /*访问企业站点-添加记录*/
         //访问企业站点
@@ -186,6 +188,7 @@ public class MtWebSocketServer {
                 }
             }
         }
+        return serEntity;
     }
     /**
      * 记录发送消息给谁
