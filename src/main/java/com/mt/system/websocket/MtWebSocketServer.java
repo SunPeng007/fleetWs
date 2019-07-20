@@ -163,7 +163,7 @@ public class MtWebSocketServer {
         Map<String, Object> dataMap = (Map<String, Object>) resParam.get("data");
         SynergyGroupRecord serEntity=(SynergyGroupRecord)BeanToMapUtil.convertMap(SynergyGroupRecord.class,dataMap);
         /*创建发送消息数据*/
-        String uuid = java.util.UUID.randomUUID().toString();//生成uuid 作为流水号
+        String uuid = "server_"+java.util.UUID.randomUUID().toString();//生成uuid 作为流水号
         BaseBuilder pushNews = new BaseBuilder(uuid,"服务器推送消息!",serEntity);
         pushNews.setResponseType(TypeConstant.RESPONSE_PUSH_TYPE); //设置响应类型
         pushNews.setPustNumber(1);//发送次数
