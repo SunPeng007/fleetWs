@@ -44,15 +44,15 @@ public class BatchController extends BaseController{
                         Map<String, Object> dataMap = (Map<String, Object>) paramMap.get("data");
                         if (dataMap.get("pushList") != null) {//清除发送
                             List<Map<String,String>> pushList=(List<Map<String,String>>)dataMap.get("pushList");
-                            String companyId=paramMap.get("companyId").toString();
-                            String groupId=paramMap.get("groupId").toString();
+                            String companyId=dataMap.get("companyId").toString();
+                            String groupId=dataMap.get("groupId").toString();
                             String token=paramMap.get("token").toString();
                             cleanPushData(companyId,groupId,token,pushList);
                         }
                         if (dataMap.get("receiveList") != null) {//清除接收
                             List<Map<String,String>> receiveList=(List<Map<String,String>>)dataMap.get("receiveList");
-                            String companyId=paramMap.get("companyId").toString();
-                            String groupId=paramMap.get("groupId").toString();
+                            String companyId=dataMap.get("companyId").toString();
+                            String groupId=dataMap.get("groupId").toString();
                             String token=paramMap.get("token").toString();
                             cleanReceiveData(companyId,groupId,token,receiveList);
                         }
