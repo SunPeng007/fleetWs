@@ -22,7 +22,10 @@ public class SynergyGroupRecord {
     private String deviceType;
 
     private String avatar;
+
     private String nickname;
+
+    private String username;
 
     public Long getId() {
         return id;
@@ -118,5 +121,13 @@ public class SynergyGroupRecord {
 
     public void setNickname(String nickname) {
         this.nickname = nickname;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
     }
 }

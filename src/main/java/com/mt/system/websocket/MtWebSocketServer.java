@@ -105,6 +105,7 @@ public class MtWebSocketServer {
                           @PathParam("token") String token,
                           @PathParam("webUrl") String webUrl) {
         try{
+            logger.info("收到客户端消息!");
             //更新当前连接时间
             MtSession  mtSession = MtContainerUtil.getMtSessionMap(companyId,groupId,token);
             if(mtSession!=null){
@@ -131,10 +132,6 @@ public class MtWebSocketServer {
                     MtContainerUtil.mtReceiveMapPut(companyId,groupId,token+reqEntity.getSerialNumber(),reqEntity);
                     /*接收到客户端信息-服务端推消息给用户*/
                     servicePushUser(webUrl,reqEntity,companyId,token,groupId);
-                    /*给当前连接发消息提示成功*/
-                    BaseBuilder resultUs=reqEntity.clone();
-                    resultUs.setResponseType(TypeConstant.RESPONSE_SUCCESS_TYPE);//设置响应类型
-                    mtSendText(session,companyId,groupId,resultUs);
                 }
             }
         }catch (Exception e){
@@ -153,8 +150,10 @@ public class MtWebSocketServer {
     public void servicePushUser(String webUrl,BaseBuilder reqEntity,String companyId,String token,String groupId)throws Exception{
         reqEntity.getData().setDeviceType(reqEntity.getRequestType());
         /*访问企业站点-添加记录*/
-        //访问企业站点
-        String url="http://"+webUrl.trim()+AsyncUrlConstant.ADD_GROUP_RECORD_URL;//请求接口地址
+        if(!webUrl.contains("http://")){
+            webUrl="http://"+webUrl;
+        }
+        String url=webUrl.trim()+AsyncUrlConstant.ADD_GROUP_RECORD_URL;//请求接口地址
         Map<String,Object> resMap = HttpRequestUtils.httpPost(url,HttpRequestUtils.getBuEncryptionParam(BeanToMapUtil.convertBean(reqEntity.getData())));
         //响应结果
         Map<String,Object> resParam=HttpRequestUtils.getBuDecryptionParam(resMap);
@@ -164,7 +163,7 @@ public class MtWebSocketServer {
         Map<String, Object> dataMap = (Map<String, Object>) resParam.get("data");
         SynergyGroupRecord serEntity=(SynergyGroupRecord)BeanToMapUtil.convertMap(SynergyGroupRecord.class,dataMap);
         /*创建发送消息数据*/
-        String uuid = java.util.UUID.randomUUID().toString();//生成uuid 作为流水号
+        String uuid = "server_"+java.util.UUID.randomUUID().toString();//生成uuid 作为流水号
         BaseBuilder pushNews = new BaseBuilder(uuid,"服务器推送消息!",serEntity);
         pushNews.setResponseType(TypeConstant.RESPONSE_PUSH_TYPE); //设置响应类型
         pushNews.setPustNumber(1);//发送次数
@@ -182,6 +181,12 @@ public class MtWebSocketServer {
                     //记录发送消息给谁
                     BaseBuilder resEntity =pushNews.clone();
                     addMtEcho(resEntity,1,token,companyId,groupId,key);
+                }else{
+                    //给当前连接发消息提示成功
+                    BaseBuilder resultUs=pushNews.clone();
+                    resultUs.setMsg("响应客户端消息!");
+                    resultUs.setResponseType(TypeConstant.RESPONSE_SUCCESS_TYPE);//设置响应类型
+                    mtSendText(mtSes.getSession(),companyId,groupId,resultUs);
                 }
             }
         }
