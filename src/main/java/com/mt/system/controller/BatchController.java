@@ -64,7 +64,7 @@ public class BatchController extends BaseController{
         }catch (Exception e) {
             e.printStackTrace();
             logger.error("清理容器数据异常：", e);
-            return resData(new ResponseBuilder().setFailResult("查询用户详情发生异常!" + e.getMessage()).encryptionResult());
+            return resData(new ResponseBuilder().setFailResult("清理容器数据异常!" + e.getMessage()).encryptionResult());
         }
     }
 
