@@ -33,7 +33,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @Component
 @ServerEndpoint(value = "/mtwebsocket/{companyId}/{groupId}/{token}/{webUrl}")
 public class MtWebSocketServer {
-    private static Logger logger = LoggerFactory.getLogger(MtWebSocketServer.class);
+    private static final Logger logger = LoggerFactory.getLogger(MtWebSocketServer.class);
     /**
      * 连接建立成功调用的方法
      * @param session
@@ -86,6 +86,7 @@ public class MtWebSocketServer {
             //移除当前连接
             MtContainerUtil.mtSessionMapRemove(companyId,groupId,token);
             logger.info("发生错误时调用!");
+            logger.error("发送错误时调用："+error.getMessage(),error);
         }catch (Exception e){
             e.printStackTrace();
             logger.error("连接关闭发生异常:"+e);
