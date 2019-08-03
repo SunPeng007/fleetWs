@@ -17,12 +17,10 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class CleanReceiveRunnable implements Runnable {
     private static Logger logger = LoggerFactory.getLogger(CleanReceiveRunnable.class);
-    // 创建一个静态钥匙
-    private static Object mtReceiveKey = "MoTooling";
     @Override
     public void run() {
         while (true) {
-            synchronized(mtReceiveKey){
+            synchronized(new Object()){
                 try{
                     ConcurrentHashMap<String,ConcurrentHashMap<String,ConcurrentHashMap<String,BaseBuilder>>> mtReceiveMap = MtContainerUtil.getMtReceiveMap();
                     for (ConcurrentHashMap<String,ConcurrentHashMap<String,BaseBuilder>> groupSession : mtReceiveMap.values()){

@@ -18,12 +18,10 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class CleanSessionRunnable implements Runnable{
     private static Logger logger = LoggerFactory.getLogger(CleanSessionRunnable.class);
-    // 创建一个静态钥匙
-    private static Object mtSessionKey = "MoTooling";
     @Override
     public void run() {
         while (true) {
-            synchronized(mtSessionKey){
+            synchronized(new Object()){
                 try{
                     ConcurrentHashMap<String,ConcurrentHashMap<String,ConcurrentHashMap<String,MtSession>>> mtSessionMap = MtContainerUtil.getMtSessionMap();
                     for (ConcurrentHashMap<String,ConcurrentHashMap<String,MtSession>> groupSession:mtSessionMap.values()){

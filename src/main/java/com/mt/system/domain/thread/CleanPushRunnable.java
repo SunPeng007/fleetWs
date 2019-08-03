@@ -22,12 +22,10 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class CleanPushRunnable implements Runnable{
     private static Logger logger = LoggerFactory.getLogger(CleanPushRunnable.class);
-    // 创建一个静态钥匙
-    private static Object mtPushKey = "MoTooling";
     @Override
     public void run() {
         while (true) {
-            synchronized(mtPushKey){
+            synchronized(new Object()){
                 try{
                     ConcurrentHashMap<String,ConcurrentHashMap<String,ConcurrentHashMap<String,BaseBuilder>>> mtPushMap = MtContainerUtil.getMtPushMap();
                     ConcurrentHashMap<String,ConcurrentHashMap<String,ConcurrentHashMap<String,MtSession>>> mtSessionMap = MtContainerUtil.getMtSessionMap();
