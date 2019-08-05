@@ -117,20 +117,21 @@ public class MtWebSocketServer {
             //判断回应类型
             //接收数据，-- 调用企业站点接口添加记录
             BaseBuilder reqEntity = JsonUtil.toObject(message,BaseBuilder.class);
+            //发送key
+            String keyStr=token+reqEntity.getSerialNumber();
             //服务器发送消息，客户端回应
             if(TypeConstant.REQUEST_RESPONSE_TYPE.equals(reqEntity.getRequestType())){
                 //移除-服务器发送消息
-                String keyStr=token+reqEntity.getSerialNumber();
-                MtContainerUtil.mtPushRemove(companyId,groupId,token);
+                MtContainerUtil.mtPushRemove(companyId,groupId,keyStr);
             }else{
                 //判断该消息是否发送过
-                BaseBuilder builder = MtContainerUtil.getMtReceiveMap(companyId,groupId,token+reqEntity.getSerialNumber());
+                BaseBuilder builder = MtContainerUtil.getMtReceiveMap(companyId,groupId,keyStr);
                 if(builder==null){
                     reqEntity.getData().setSendTime(DateUtils.getDateTime());
                     reqEntity.setPushTime(DateUtils.currentTimeMilli());
                     reqEntity.setPustToken(token);//发送人token
                     //添加接收消息
-                    MtContainerUtil.mtReceiveMapPut(companyId,groupId,token+reqEntity.getSerialNumber(),reqEntity);
+                    MtContainerUtil.mtReceiveMapPut(companyId,groupId,keyStr,reqEntity);
                     /*接收到客户端信息-服务端推消息给用户*/
                     servicePushUser(webUrl,reqEntity,companyId,token,groupId);
                 }
