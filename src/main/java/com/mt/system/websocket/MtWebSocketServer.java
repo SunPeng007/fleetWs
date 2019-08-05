@@ -104,7 +104,7 @@ public class MtWebSocketServer {
                           @PathParam("companyId")String companyId,
                           @PathParam("groupId") String groupId,
                           @PathParam("token") String token,
-                          @PathParam("webUrl") String webUrl) {
+                          @PathParam("webUrl") String webUrl)throws Exception {
         try{
             logger.info("收到客户端消息!");
             //更新当前连接时间
@@ -141,6 +141,7 @@ public class MtWebSocketServer {
         }catch (Exception e){
             e.printStackTrace();
             logger.error("发送消息发生异常:"+e);
+            throw e;
         }
     }
     /**
