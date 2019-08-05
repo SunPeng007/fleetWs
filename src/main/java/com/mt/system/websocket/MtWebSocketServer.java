@@ -114,15 +114,15 @@ public class MtWebSocketServer {
             }else{
                 MtContainerUtil.mtSessionMapPut(companyId,groupId,token,session);
             }
-            //判断回应类型
             //接收数据，-- 调用企业站点接口添加记录
             BaseBuilder reqEntity = JsonUtil.toObject(message,BaseBuilder.class);
             //发送key
             String keyStr=token+reqEntity.getSerialNumber();
-            //服务器发送消息，客户端回应
+            //判断回应类型
             if(TypeConstant.REQUEST_PING_TYPE.equals(reqEntity.getRequestType())){
                 //ping-客户端心跳，不做任何操作
             }else if(TypeConstant.REQUEST_RESPONSE_TYPE.equals(reqEntity.getRequestType())){
+                //服务器发送消息，客户端回应
                 //移除-服务器发送消息
                 MtContainerUtil.mtPushRemove(companyId,groupId,keyStr);
             }else{
