@@ -28,15 +28,14 @@ public class CleanPushRunnable implements Runnable{
             synchronized(new Object()){
                 try{
                     ConcurrentHashMap<String,ConcurrentHashMap<String,ConcurrentHashMap<String,BaseBuilder>>> mtPushMap = MtContainerUtil.getMtPushMap();
-                    ConcurrentHashMap<String,ConcurrentHashMap<String,ConcurrentHashMap<String,MtSession>>> mtSessionMap = MtContainerUtil.getMtSessionMap();
                     /*判断是否需要重发*/
                     Iterator<String> comIter = mtPushMap.keySet().iterator();
                     while(comIter.hasNext()) {
                         String companyId = comIter.next();//公司id
                         ConcurrentHashMap<String,ConcurrentHashMap<String,BaseBuilder>> groupSession=mtPushMap.get(companyId);
                         Iterator<String> groupIter = groupSession.keySet().iterator();
-                        while(comIter.hasNext()) {
-                            String groupId = comIter.next();//群id
+                        while(groupIter.hasNext()) {
+                            String groupId = groupIter.next();//群id
                             ConcurrentHashMap<String,BaseBuilder> contSession =groupSession.get(groupId);
                             for (BaseBuilder baseBuilder : contSession.values()) {
                                 String token = baseBuilder.getReceiveToken();//token
