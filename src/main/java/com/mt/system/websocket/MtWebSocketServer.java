@@ -175,7 +175,7 @@ public class MtWebSocketServer {
         Integer timeStamp=Integer.valueOf(serEntity.getSendTime());
         serEntity.setSendTime(DateUtils.timestampToString(timeStamp,"yyyy-MM-dd HH:mm:ss"));
         /*群发消息*/
-        ConcurrentHashMap<String,MtSession>  mtSesMap = MtContainerUtil.getMtSessionMap(companyId,groupId);
+        ConcurrentHashMap<String,MtSession> mtSesMap = MtContainerUtil.getMtSessionMap(companyId,groupId);
         if(mtSesMap!=null){
             Iterator<String> iter = mtSesMap.keySet().iterator();
             while(iter.hasNext()){
