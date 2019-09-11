@@ -20,24 +20,22 @@ public class CleanReceiveRunnable implements Runnable {
     @Override
     public void run() {
         while (true) {
-            synchronized(new Object()){
-                try{
-                    ConcurrentHashMap<String,ConcurrentHashMap<String,ConcurrentHashMap<String,BaseBuilder>>> mtReceiveMap = MtContainerUtil.getMtReceiveMap();
-                    for (ConcurrentHashMap<String,ConcurrentHashMap<String,BaseBuilder>> groupSession : mtReceiveMap.values()){
-                        for (ConcurrentHashMap<String,BaseBuilder> contSession : groupSession.values()){
-                            for (BaseBuilder baseBuilder : contSession.values()) {
-                                if(DateUtils.currentCompare(baseBuilder.getPushTime())>ConnectTimeConstant.CLOSE_TIME_DATA_CODE){
-                                    String token = baseBuilder.getPustToken()+baseBuilder.getSerialNumber();
-                                    mtReceiveMap.remove(token);
-                                }
+            try{
+                ConcurrentHashMap<String,ConcurrentHashMap<String,ConcurrentHashMap<String,BaseBuilder>>> mtReceiveMap = MtContainerUtil.getMtReceiveMap();
+                for (ConcurrentHashMap<String,ConcurrentHashMap<String,BaseBuilder>> groupSession : mtReceiveMap.values()){
+                    for (ConcurrentHashMap<String,BaseBuilder> contSession : groupSession.values()){
+                        for (BaseBuilder baseBuilder : contSession.values()) {
+                            if(DateUtils.currentCompare(baseBuilder.getPushTime())>ConnectTimeConstant.CLOSE_TIME_DATA_CODE){
+                                String token = baseBuilder.getPustToken()+baseBuilder.getSerialNumber();
+                                mtReceiveMap.remove(token);
                             }
                         }
                     }
-                    Thread.sleep(ConnectTimeConstant.CLOSE_RECEIVE_TIME_CODE);
-                }catch (Exception e) {
-                    e.printStackTrace();
-                    logger.error("重发异常:"+e);
                 }
+                Thread.sleep(ConnectTimeConstant.CLOSE_RECEIVE_TIME_CODE);
+            }catch (Exception e) {
+                e.printStackTrace();
+                logger.error("重发异常:"+e);
             }
         }
     }

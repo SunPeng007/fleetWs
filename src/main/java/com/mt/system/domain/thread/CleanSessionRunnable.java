@@ -21,26 +21,24 @@ public class CleanSessionRunnable implements Runnable{
     @Override
     public void run() {
         while (true) {
-            synchronized(new Object()){
-                try{
-                    ConcurrentHashMap<String,ConcurrentHashMap<String,ConcurrentHashMap<String,MtSession>>> mtSessionMap = MtContainerUtil.getMtSessionMap();
-                    for (ConcurrentHashMap<String,ConcurrentHashMap<String,MtSession>> groupSession:mtSessionMap.values()){
-                        for (ConcurrentHashMap<String,MtSession> contSession:groupSession.values()){
-                            for (MtSession mtSession:contSession.values()){
-                                if(DateUtils.currentCompare(mtSession.getConnectTime())>ConnectTimeConstant.EFFECTIVE_TIME_CODE){
-                                    if(!mtSession.getSession().isOpen()){//连接是否打开
-                                        mtSessionMap.remove(mtSession.getToken());
-                                        logger.info("清除连接："+mtSession.getToken());
-                                    }
+            try{
+                ConcurrentHashMap<String,ConcurrentHashMap<String,ConcurrentHashMap<String,MtSession>>> mtSessionMap = MtContainerUtil.getMtSessionMap();
+                for (ConcurrentHashMap<String,ConcurrentHashMap<String,MtSession>> groupSession:mtSessionMap.values()){
+                    for (ConcurrentHashMap<String,MtSession> contSession:groupSession.values()){
+                        for (MtSession mtSession:contSession.values()){
+                            if(DateUtils.currentCompare(mtSession.getConnectTime())>ConnectTimeConstant.EFFECTIVE_TIME_CODE){
+                                if(!mtSession.getSession().isOpen()){//连接是否打开
+                                    mtSessionMap.remove(mtSession.getToken());
+                                    logger.info("清除连接："+mtSession.getToken());
                                 }
                             }
                         }
                     }
-                    Thread.sleep(ConnectTimeConstant.CLOSE_SESSION_TIME_CODE);//睡10分钟
-                }catch (Exception e) {
-                    e.printStackTrace();
-                    logger.error("重发异常:"+e);
                 }
+                Thread.sleep(ConnectTimeConstant.CLOSE_SESSION_TIME_CODE);//睡10分钟
+            }catch (Exception e) {
+                e.printStackTrace();
+                logger.error("重发异常:"+e);
             }
         }
     }

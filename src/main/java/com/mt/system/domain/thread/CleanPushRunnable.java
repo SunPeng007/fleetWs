@@ -25,51 +25,49 @@ public class CleanPushRunnable implements Runnable{
     @Override
     public void run() {
         while (true) {
-            synchronized(new Object()){
-                try{
-                    ConcurrentHashMap<String,ConcurrentHashMap<String,ConcurrentHashMap<String,BaseBuilder>>> mtPushMap = MtContainerUtil.getMtPushMap();
-                    /*判断是否需要重发*/
-                    Iterator<String> comIter = mtPushMap.keySet().iterator();
-                    while(comIter.hasNext()) {
-                        String companyId = comIter.next();//公司id
-                        ConcurrentHashMap<String,ConcurrentHashMap<String,BaseBuilder>> groupSession=mtPushMap.get(companyId);
-                        Iterator<String> groupIter = groupSession.keySet().iterator();
-                        while(groupIter.hasNext()) {
-                            String groupId = groupIter.next();//群id
-                            ConcurrentHashMap<String,BaseBuilder> contSession =groupSession.get(groupId);
-                            for (BaseBuilder baseBuilder : contSession.values()) {
-                                String token = baseBuilder.getReceiveToken();//token
-                                MtSession mtSession=MtContainerUtil.getMtSessionMap(companyId,groupId,token);
-                                if(mtSession!=null){
-                                    Session session=mtSession.getSession();
-                                    String keyStr=token+baseBuilder.getSerialNumber();
-                                    //先判断连接是否打开
-                                    if(!session.isOpen()) {
-                                        MtContainerUtil.mtPushRemove(companyId,groupId,keyStr);
-                                        MtContainerUtil.mtSessionMapRemove(companyId,groupId,token);
-                                        continue;
-                                    }
-                                    //判断重发次数是否达到上限
-                                    if(baseBuilder.getPustNumber()>=PantNumberConstant.PANT_NUMBER_CODE){
-                                        MtContainerUtil.mtPushRemove(companyId,groupId,keyStr);
-                                        MtContainerUtil.mtSessionMapRemove(companyId,groupId,token);
-                                        continue;
-                                    }
-                                    //判断是否需要重发
-                                    if(DateUtils.currentCompare(baseBuilder.getPushTime())>ConnectTimeConstant.ANSWER_TIME_CODE){
-                                        baseBuilder.setPustNumber((baseBuilder.getPustNumber()+1));
-                                        MtWebSocketServer.mtSendText(session,companyId,groupId,baseBuilder);
-                                        logger.info(token+"消息重发!");
-                                    }
+            try{
+                ConcurrentHashMap<String,ConcurrentHashMap<String,ConcurrentHashMap<String,BaseBuilder>>> mtPushMap = MtContainerUtil.getMtPushMap();
+                /*判断是否需要重发*/
+                Iterator<String> comIter = mtPushMap.keySet().iterator();
+                while(comIter.hasNext()) {
+                    String companyId = comIter.next();//公司id
+                    ConcurrentHashMap<String,ConcurrentHashMap<String,BaseBuilder>> groupSession=mtPushMap.get(companyId);
+                    Iterator<String> groupIter = groupSession.keySet().iterator();
+                    while(groupIter.hasNext()) {
+                        String groupId = groupIter.next();//群id
+                        ConcurrentHashMap<String,BaseBuilder> contSession =groupSession.get(groupId);
+                        for (BaseBuilder baseBuilder : contSession.values()) {
+                            String token = baseBuilder.getReceiveToken();//token
+                            MtSession mtSession=MtContainerUtil.getMtSessionMap(companyId,groupId,token);
+                            if(mtSession!=null){
+                                Session session=mtSession.getSession();
+                                String keyStr=token+baseBuilder.getSerialNumber();
+                                //先判断连接是否打开
+                                if(!session.isOpen()) {
+                                    MtContainerUtil.mtPushRemove(companyId,groupId,keyStr);
+                                    MtContainerUtil.mtSessionMapRemove(companyId,groupId,token);
+                                    continue;
+                                }
+                                //判断重发次数是否达到上限
+                                if(baseBuilder.getPustNumber()>=PantNumberConstant.PANT_NUMBER_CODE){
+                                    MtContainerUtil.mtPushRemove(companyId,groupId,keyStr);
+                                    MtContainerUtil.mtSessionMapRemove(companyId,groupId,token);
+                                    continue;
+                                }
+                                //判断是否需要重发
+                                if(DateUtils.currentCompare(baseBuilder.getPushTime())>ConnectTimeConstant.ANSWER_TIME_CODE){
+                                    baseBuilder.setPustNumber((baseBuilder.getPustNumber()+1));
+                                    MtWebSocketServer.mtSendText(session,companyId,groupId,baseBuilder);
+                                    logger.info(token+"消息重发!");
                                 }
                             }
                         }
                     }
-                    Thread.sleep(ConnectTimeConstant.CLOSE_PUSH_TIME_CODE);
-                }catch (Exception e) {
-                    e.printStackTrace();
-                    logger.error("重发异常:"+e);
                 }
+                Thread.sleep(ConnectTimeConstant.CLOSE_PUSH_TIME_CODE);
+            }catch (Exception e) {
+                e.printStackTrace();
+                logger.error("重发异常:"+e);
             }
         }
     }
