@@ -76,12 +76,7 @@ public class BatchController extends BaseController{
         }
         for (Map<String, String> tempMap : pushList) {
             String keyToken = token + tempMap.get("serialNumber");
-            synchronized(this) {
-                BaseBuilder builder =MtContainerUtil.getMtReceiveMap(companyId,groupId,keyToken);
-                if (builder != null) {
-                    MtContainerUtil.mtReceiveMapRemove(companyId, groupId, token);
-                }
-            }
+            MtContainerUtil.mtReceiveMapRemove(companyId, groupId, keyToken);
         }
     }
     /**
@@ -96,12 +91,7 @@ public class BatchController extends BaseController{
         }
         for (Map<String, String> tempMap : receiveList){
             String keyToken = token + tempMap.get("serialNumber");
-            synchronized(this) {
-                BaseBuilder builder = MtContainerUtil.getMtPushMap(companyId,groupId,keyToken);
-                if (builder != null) {
-                    MtContainerUtil.mtPushRemove(companyId,groupId,keyToken);
-                }
-            }
+            MtContainerUtil.mtPushRemove(companyId,groupId,keyToken);
         }
     }
 }
