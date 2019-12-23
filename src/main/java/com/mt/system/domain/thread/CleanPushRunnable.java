@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.websocket.Session;
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -26,16 +27,16 @@ public class CleanPushRunnable implements Runnable{
     public void run() {
         while (true) {
             try{
-                ConcurrentHashMap<String,ConcurrentHashMap<String,ConcurrentHashMap<String,BaseBuilder>>> mtPushMap = MtContainerUtil.getMtPushMap();
+                Hashtable<String,Hashtable<String,Hashtable<String,BaseBuilder>>> mtPushMap = MtContainerUtil.getMtPushMap();
                 /*判断是否需要重发*/
                 Iterator<String> comIter = mtPushMap.keySet().iterator();
                 while(comIter.hasNext()) {
                     String companyId = comIter.next();//公司id
-                    ConcurrentHashMap<String,ConcurrentHashMap<String,BaseBuilder>> groupSession=mtPushMap.get(companyId);
+                    Hashtable<String,Hashtable<String,BaseBuilder>> groupSession=mtPushMap.get(companyId);
                     Iterator<String> groupIter = groupSession.keySet().iterator();
                     while(groupIter.hasNext()) {
                         String groupId = groupIter.next();//群id
-                        ConcurrentHashMap<String,BaseBuilder> contSession =groupSession.get(groupId);
+                        Hashtable<String,BaseBuilder> contSession =groupSession.get(groupId);
                         for (BaseBuilder baseBuilder : contSession.values()) {
                             String token = baseBuilder.getReceiveToken();//token
                             MtSession mtSession=MtContainerUtil.getMtSessionMap(companyId,groupId,token);

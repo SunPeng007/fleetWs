@@ -9,7 +9,7 @@ package com.mt.system.domain.constant;
 public interface ConnectTimeConstant {
 
     /**
-     * 定时清理未回应连接
+     * 定时清理未回应，已接收数据，重发机制。
      */
     long CLOSE_PUSH_TIME_CODE=5000;//毫秒
     /**
@@ -18,7 +18,7 @@ public interface ConnectTimeConstant {
     long CLOSE_RECEIVE_TIME_CODE=120000;//毫秒
 
     /**
-     * 定时执行清理接收数据
+     * 定时执行清理连接
      */
     long CLOSE_SESSION_TIME_CODE=120000;//毫秒
 

@@ -4,6 +4,7 @@ import com.mt.system.common.util.DateUtils;
 import com.mt.system.domain.entity.BaseBuilder;
 import com.mt.system.domain.entity.MtSession;
 import javax.websocket.Session;
+import java.util.Hashtable;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -16,19 +17,19 @@ import java.util.concurrent.ConcurrentHashMap;
 public class MtContainerUtil {
 
     //记录连接对象(公司-群-连接对象）
-    private static ConcurrentHashMap<String,ConcurrentHashMap<String,ConcurrentHashMap<String,MtSession>>> mtSessionMap=new ConcurrentHashMap();
+    private static Hashtable<String,Hashtable<String,Hashtable<String,MtSession>>> mtSessionMap=new Hashtable();
     //记录服务器发送消息
-    private static ConcurrentHashMap<String,ConcurrentHashMap<String,ConcurrentHashMap<String,BaseBuilder>>> mtPushMap = new ConcurrentHashMap();
+    private static Hashtable<String,Hashtable<String,Hashtable<String,BaseBuilder>>> mtPushMap = new Hashtable();
     //记录接收消息
-    private static ConcurrentHashMap<String,ConcurrentHashMap<String,ConcurrentHashMap<String,BaseBuilder>>> mtReceiveMap = new ConcurrentHashMap();
+    private static Hashtable<String,Hashtable<String,Hashtable<String,BaseBuilder>>> mtReceiveMap = new Hashtable();
 
-    public static ConcurrentHashMap<String,ConcurrentHashMap<String,ConcurrentHashMap<String,MtSession>>> getMtSessionMap(){
+    public static Hashtable<String,Hashtable<String,Hashtable<String,MtSession>>> getMtSessionMap(){
         return mtSessionMap;
     }
-    public static ConcurrentHashMap<String,ConcurrentHashMap<String,ConcurrentHashMap<String,BaseBuilder>>> getMtPushMap(){
+    public static Hashtable<String,Hashtable<String,Hashtable<String,BaseBuilder>>> getMtPushMap(){
         return mtPushMap;
     }
-    public static ConcurrentHashMap<String,ConcurrentHashMap<String,ConcurrentHashMap<String,BaseBuilder>>> getMtReceiveMap(){
+    public static Hashtable<String,Hashtable<String,Hashtable<String,BaseBuilder>>> getMtReceiveMap(){
         return mtReceiveMap;
     }
 
@@ -46,17 +47,17 @@ public class MtContainerUtil {
             if(mtReceiveMap.get(companyId).get(groupId)!=null){
                 mtReceiveMap.get(companyId).get(groupId).put(token,baseBuilder);
             }else{
-                ConcurrentHashMap<String,BaseBuilder> connectPush=new ConcurrentHashMap();
-                connectPush.put(token,baseBuilder);
-                mtReceiveMap.get(companyId).put(groupId,connectPush);
+                Hashtable<String,BaseBuilder> msgPush=new Hashtable();
+                msgPush.put(token,baseBuilder);
+                mtReceiveMap.get(companyId).put(groupId,msgPush);
             }
         }else{
-            //连接对象
-            ConcurrentHashMap<String,BaseBuilder> connectPush=new ConcurrentHashMap();
-            connectPush.put(token,baseBuilder);
+            //消息对象
+            Hashtable<String,BaseBuilder> msgPush=new Hashtable();
+            msgPush.put(token,baseBuilder);
             //群对象
-            ConcurrentHashMap<String,ConcurrentHashMap<String,BaseBuilder>> groupPush = new ConcurrentHashMap<>();
-            groupPush.put(groupId,connectPush);
+            Hashtable<String,Hashtable<String,BaseBuilder>> groupPush = new Hashtable<>();
+            groupPush.put(groupId,msgPush);
             //连接成功-加人
             mtReceiveMap.put(companyId,groupPush);
         }
@@ -106,16 +107,16 @@ public class MtContainerUtil {
             if(mtPushMap.get(companyId).get(groupId)!=null){
                 mtPushMap.get(companyId).get(groupId).put(token,baseBuilder);
             }else{
-                ConcurrentHashMap<String,BaseBuilder> connectPush=new ConcurrentHashMap();
+                Hashtable<String,BaseBuilder> connectPush=new Hashtable();
                 connectPush.put(token,baseBuilder);
                 mtPushMap.get(companyId).put(groupId,connectPush);
             }
         }else{
             //连接对象
-            ConcurrentHashMap<String,BaseBuilder> connectPush=new ConcurrentHashMap();
+            Hashtable<String,BaseBuilder> connectPush=new Hashtable();
             connectPush.put(token,baseBuilder);
             //群对象
-            ConcurrentHashMap<String,ConcurrentHashMap<String,BaseBuilder>> groupPush = new ConcurrentHashMap<>();
+            Hashtable<String,Hashtable<String,BaseBuilder>> groupPush = new Hashtable<>();
             groupPush.put(groupId,connectPush);
             //连接成功-加人
             mtPushMap.put(companyId,groupPush);
@@ -165,16 +166,16 @@ public class MtContainerUtil {
             if(mtSessionMap.get(companyId).get(groupId)!=null){
                 mtSessionMap.get(companyId).get(groupId).put(token,new MtSession(session,token,DateUtils.currentTimeMilli()));
             }else{
-                ConcurrentHashMap<String,MtSession> connectSession=new ConcurrentHashMap();
+                Hashtable<String,MtSession> connectSession=new Hashtable();
                 connectSession.put(token,new MtSession(session,token,DateUtils.currentTimeMilli()));
                 mtSessionMap.get(companyId).put(groupId,connectSession);
             }
         }else{
             //连接对象
-            ConcurrentHashMap<String,MtSession> connectSession=new ConcurrentHashMap();
+            Hashtable<String,MtSession> connectSession=new Hashtable();
             connectSession.put(token,new MtSession(session,token,DateUtils.currentTimeMilli()));
             //群对象
-            ConcurrentHashMap<String,ConcurrentHashMap<String,MtSession>> groupSession = new ConcurrentHashMap<>();
+            Hashtable<String,Hashtable<String,MtSession>> groupSession = new Hashtable<>();
             groupSession.put(groupId,connectSession);
             //连接成功-加人
             mtSessionMap.put(companyId,groupSession);
@@ -216,7 +217,7 @@ public class MtContainerUtil {
      * @param groupId
      * @return
      */
-    public static ConcurrentHashMap<String,MtSession> getMtSessionMap(String companyId,String groupId){
+    public static Hashtable<String,MtSession> getMtSessionMap(String companyId,String groupId){
         if(mtSessionMap.get(companyId)!=null){
             if(mtSessionMap.get(companyId).get(groupId)!=null){
                 return mtSessionMap.get(companyId).get(groupId);
