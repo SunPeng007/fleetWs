@@ -1,6 +1,6 @@
 <configuration>
     <!-- 定义log文件的目录 -->
-    <property name="LOG_HOME" value="/log/mtwebsocket"></property>
+    <property name="LOG_HOME" value="/var/log/mt/mtwebsocket"></property>
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
             <!-- %.-1level 只显示信息级别的首字母,%-5level 左对齐显示信息级别全称 -->
