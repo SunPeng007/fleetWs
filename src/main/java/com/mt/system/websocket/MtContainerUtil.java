@@ -15,7 +15,6 @@ import java.util.concurrent.ConcurrentHashMap;
  *  ConcurrentHashMap是线程安全的，而HashMap是线程不安全的
  */
 public class MtContainerUtil {
-
     //记录连接对象(公司-群-连接对象）
     private static Hashtable<String,Hashtable<String,Hashtable<String,MtSession>>> mtSessionMap=new Hashtable();
     //记录服务器发送消息
