@@ -26,10 +26,6 @@ import java.util.concurrent.ConcurrentHashMap;
 @RequestMapping("/batch")
 public class BatchController extends BaseController{
     private static Logger logger = LoggerFactory.getLogger(BatchController.class);
-    //发送锁
-    private static String pustKey="MoTooling";
-    //接收锁
-    private static String receiveKey="MoTooling";
     /**
      * 批量响应
      */
@@ -75,17 +71,12 @@ public class BatchController extends BaseController{
      */
     private void  cleanPushData(String companyId,String groupId,String token,List<Map<String,String>> pushList){
         logger.info("清除发送（客户端）响应");
-        synchronized(pustKey) {
-            if (pushList == null || pushList.size() <= 0) {
-                return;
-            }
-            for (Map<String, String> tempMap : pushList) {
-                String keyToken = token + tempMap.get("serialNumber");
-                BaseBuilder builder =MtContainerUtil.getMtReceiveMap(companyId,groupId,keyToken);
-                if (builder != null) {
-                    MtContainerUtil.mtReceiveMapRemove(companyId,groupId,token);
-                }
-            }
+        if (pushList == null || pushList.size() <= 0) {
+            return;
+        }
+        for (Map<String, String> tempMap : pushList) {
+            String keyToken = token + tempMap.get("serialNumber");
+            MtContainerUtil.mtReceiveMapRemove(companyId, groupId, keyToken);
         }
     }
     /**
@@ -95,18 +86,12 @@ public class BatchController extends BaseController{
      */
     private void cleanReceiveData(String companyId,String groupId,String token,List<Map<String,String>> receiveList){
         logger.info("清除响应（客户端）响应");
-        synchronized(receiveKey) {
-            if(receiveList==null || receiveList.size()<=0) {
-                return;
-            }
-            ConcurrentHashMap<String,ConcurrentHashMap<String,ConcurrentHashMap<String,BaseBuilder>>> mtPushMap = MtContainerUtil.getMtPushMap();
-            for (Map<String, String> tempMap : receiveList){
-                String keyToken = token + tempMap.get("serialNumber");
-                BaseBuilder builder = MtContainerUtil.getMtPushMap(companyId,groupId,keyToken);
-                if (builder != null) {
-                    MtContainerUtil.mtPushRemove(companyId,groupId,keyToken);
-                }
-            }
+        if(receiveList==null || receiveList.size()<=0) {
+            return;
+        }
+        for (Map<String, String> tempMap : receiveList){
+            String keyToken = token + tempMap.get("serialNumber");
+            MtContainerUtil.mtPushRemove(companyId,groupId,keyToken);
         }
     }
 }

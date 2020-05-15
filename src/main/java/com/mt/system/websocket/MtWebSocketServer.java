@@ -17,9 +17,9 @@ import javax.websocket.*;
 import javax.websocket.server.PathParam;
 import javax.websocket.server.ServerEndpoint;
 import java.io.IOException;
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Created with IDEA
@@ -33,7 +33,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @Component
 @ServerEndpoint(value = "/mtwebsocket/{companyId}/{groupId}/{token}/{webUrl}")
 public class MtWebSocketServer {
-    private static Logger logger = LoggerFactory.getLogger(MtWebSocketServer.class);
+    private static final Logger logger = LoggerFactory.getLogger(MtWebSocketServer.class);
     /**
      * 连接建立成功调用的方法
      * @param session
@@ -103,7 +103,7 @@ public class MtWebSocketServer {
                           @PathParam("companyId")String companyId,
                           @PathParam("groupId") String groupId,
                           @PathParam("token") String token,
-                          @PathParam("webUrl") String webUrl) {
+                          @PathParam("webUrl") String webUrl)throws Exception {
         try{
             logger.info("收到客户端消息!");
             //更新当前连接时间
@@ -113,23 +113,26 @@ public class MtWebSocketServer {
             }else{
                 MtContainerUtil.mtSessionMapPut(companyId,groupId,token,session);
             }
-            //判断回应类型
             //接收数据，-- 调用企业站点接口添加记录
             BaseBuilder reqEntity = JsonUtil.toObject(message,BaseBuilder.class);
-            //服务器发送消息，客户端回应
-            if(TypeConstant.REQUEST_RESPONSE_TYPE.equals(reqEntity.getRequestType())){
+            //发送key
+            String keyStr=token+reqEntity.getSerialNumber();
+            //判断回应类型
+            if(TypeConstant.REQUEST_PING_TYPE.equals(reqEntity.getRequestType())){
+                //ping-客户端心跳，不做任何操作
+            }else if(TypeConstant.REQUEST_RESPONSE_TYPE.equals(reqEntity.getRequestType())){
+                //服务器发送消息，客户端回应
                 //移除-服务器发送消息
-                String keyStr=token+reqEntity.getSerialNumber();
-                MtContainerUtil.mtPushRemove(companyId,groupId,token);
+                MtContainerUtil.mtPushRemove(companyId,groupId,keyStr);
             }else{
                 //判断该消息是否发送过
-                BaseBuilder builder = MtContainerUtil.getMtReceiveMap(companyId,groupId,token+reqEntity.getSerialNumber());
+                BaseBuilder builder = MtContainerUtil.getMtReceiveMap(companyId,groupId,keyStr);
                 if(builder==null){
                     reqEntity.getData().setSendTime(DateUtils.getDateTime());
                     reqEntity.setPushTime(DateUtils.currentTimeMilli());
                     reqEntity.setPustToken(token);//发送人token
                     //添加接收消息
-                    MtContainerUtil.mtReceiveMapPut(companyId,groupId,token+reqEntity.getSerialNumber(),reqEntity);
+                    MtContainerUtil.mtReceiveMapPut(companyId,groupId,keyStr,reqEntity);
                     /*接收到客户端信息-服务端推消息给用户*/
                     servicePushUser(webUrl,reqEntity,companyId,token,groupId);
                 }
@@ -137,8 +140,10 @@ public class MtWebSocketServer {
         }catch (Exception e){
             e.printStackTrace();
             logger.error("发送消息发生异常:"+e);
+            throw e;
         }
     }
+
     /**
      * 接收到客户端信息-服务端推消息给用户
      * @param reqEntity
@@ -170,7 +175,7 @@ public class MtWebSocketServer {
         Integer timeStamp=Integer.valueOf(serEntity.getSendTime());
         serEntity.setSendTime(DateUtils.timestampToString(timeStamp,"yyyy-MM-dd HH:mm:ss"));
         /*群发消息*/
-        ConcurrentHashMap<String,MtSession>  mtSesMap = MtContainerUtil.getMtSessionMap(companyId,groupId);
+        Hashtable<String,MtSession> mtSesMap = MtContainerUtil.getMtSessionMap(companyId,groupId);
         if(mtSesMap!=null){
             Iterator<String> iter = mtSesMap.keySet().iterator();
             while(iter.hasNext()){
