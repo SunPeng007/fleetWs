@@ -17,9 +17,9 @@ import javax.websocket.*;
 import javax.websocket.server.PathParam;
 import javax.websocket.server.ServerEndpoint;
 import java.io.IOException;
-import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Created with IDEA
@@ -175,7 +175,7 @@ public class MtWebSocketServer {
         Integer timeStamp=Integer.valueOf(serEntity.getSendTime());
         serEntity.setSendTime(DateUtils.timestampToString(timeStamp,"yyyy-MM-dd HH:mm:ss"));
         /*群发消息*/
-        Hashtable<String,MtSession> mtSesMap = MtContainerUtil.getMtSessionMap(companyId,groupId);
+        ConcurrentHashMap<String,MtSession> mtSesMap = MtContainerUtil.getMtSessionMap(companyId,groupId);
         if(mtSesMap!=null){
             Iterator<String> iter = mtSesMap.keySet().iterator();
             while(iter.hasNext()){
