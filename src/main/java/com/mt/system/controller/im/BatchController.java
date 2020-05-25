@@ -1,10 +1,9 @@
-package com.mt.system.controller;
+package com.mt.system.controller.im;
 
 import com.mt.system.common.result.ResponseBuilder;
 import com.mt.system.common.util.RSAUtils4Client;
-import com.mt.system.domain.entity.BaseBuilder;
-import com.mt.system.websocket.MtContainerUtil;
-import com.mt.system.websocket.MtWebSocketServer;
+import com.mt.system.controller.BaseController;
+import com.mt.system.websocket.im.MtContainerUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
@@ -14,7 +13,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Created with IDEA
@@ -24,7 +22,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 @Controller
 @RequestMapping("/batch")
-public class BatchController extends BaseController{
+public class BatchController extends BaseController {
     private static Logger logger = LoggerFactory.getLogger(BatchController.class);
     /**
      * 批量响应

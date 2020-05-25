@@ -1,8 +1,8 @@
 package com.mt.system.config;
 
-import com.mt.system.domain.thread.CleanPushRunnable;
-import com.mt.system.domain.thread.CleanReceiveRunnable;
-import com.mt.system.domain.thread.CleanSessionRunnable;
+import com.mt.system.domain.thread.im.CleanPushRunnable;
+import com.mt.system.domain.thread.im.CleanReceiveRunnable;
+import com.mt.system.domain.thread.im.CleanSessionRunnable;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;

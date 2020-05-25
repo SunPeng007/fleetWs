@@ -1,4 +1,4 @@
-package com.mt.system.websocket;
+package com.mt.system.websocket.im;
 
 import com.alibaba.fastjson.JSONObject;
 import com.mt.system.common.util.BeanToMapUtil;
@@ -7,9 +7,9 @@ import com.mt.system.common.util.HttpRequestUtils;
 import com.mt.system.common.util.JsonUtil;
 import com.mt.system.domain.constant.AsyncUrlConstant;
 import com.mt.system.domain.constant.TypeConstant;
-import com.mt.system.domain.entity.BaseBuilder;
-import com.mt.system.domain.entity.MtSession;
-import com.mt.system.domain.entity.SynergyGroupRecord;
+import com.mt.system.domain.entity.im.BaseBuilder;
+import com.mt.system.domain.entity.im.MtSession;
+import com.mt.system.domain.entity.im.SynergyGroupRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -43,13 +43,14 @@ public class MtWebSocketServer {
     public void onOpen(Session session,
                        @PathParam("companyId")String companyId,
                        @PathParam("token") String token,
-                       @PathParam("groupId") String groupId) {
+                       @PathParam("groupId") String groupId)throws IOException {
         try{
             MtContainerUtil.mtSessionMapPut(companyId,groupId,token,session);
             logger.info("连接成功调用!");
         }catch (Exception e){
             e.printStackTrace();
             logger.error("连接发生异常:"+e);
+            throw e;
         }
     }
     /**
@@ -70,6 +71,7 @@ public class MtWebSocketServer {
         }catch (Exception e){
             e.printStackTrace();
             logger.error("连接关闭发生异常:"+e);
+            throw e;
         }
     }
     /**
@@ -81,14 +83,15 @@ public class MtWebSocketServer {
     public void onError(Session session, Throwable error,
                         @PathParam("companyId")String companyId,
                         @PathParam("groupId") String groupId,
-                        @PathParam("token") String token) {
+                        @PathParam("token") String token)throws IOException {
         try{
             //移除当前连接
             MtContainerUtil.mtSessionMapRemove(companyId,groupId,token);
             logger.info("发生错误时调用!");
         }catch (Exception e){
             e.printStackTrace();
-            logger.error("连接关闭发生异常:"+e);
+            logger.error("发生错误发生异常:"+e);
+            throw e;
         }
     }
     /**
@@ -139,7 +142,7 @@ public class MtWebSocketServer {
             }
         }catch (Exception e){
             e.printStackTrace();
-            logger.error("发送消息发生异常:"+e);
+            logger.error("收到客户端消息发生异常:"+e);
             throw e;
         }
     }

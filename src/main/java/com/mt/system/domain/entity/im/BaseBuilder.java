@@ -1,4 +1,4 @@
-package com.mt.system.domain.entity;
+package com.mt.system.domain.entity.im;
 
 /**
  *  响应json数据包类

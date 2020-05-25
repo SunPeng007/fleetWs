@@ -1,8 +1,8 @@
-package com.mt.system.websocket;
+package com.mt.system.websocket.im;
 
 import com.mt.system.common.util.DateUtils;
-import com.mt.system.domain.entity.BaseBuilder;
-import com.mt.system.domain.entity.MtSession;
+import com.mt.system.domain.entity.im.BaseBuilder;
+import com.mt.system.domain.entity.im.MtSession;
 import javax.websocket.Session;
 import java.util.concurrent.ConcurrentHashMap;
 
