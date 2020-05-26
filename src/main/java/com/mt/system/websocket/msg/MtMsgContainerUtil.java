@@ -92,25 +92,25 @@ public class MtMsgContainerUtil {
      * @param token
      * @param baseBuilder
      */
-    public static void putReceive(String companyId,String token,BaseBuilder baseBuilder){
+    public static void putReceive(String companyId,String key,BaseBuilder baseBuilder){
         if(mtMsgReceiveMap.get(companyId)!=null){
-                mtMsgReceiveMap.get(companyId).put(token,baseBuilder);
+                mtMsgReceiveMap.get(companyId).put(key,baseBuilder);
         }else{
             ConcurrentHashMap<String,BaseBuilder> msgReceive=new ConcurrentHashMap();
-            msgReceive.put(token,baseBuilder);
+            msgReceive.put(key,baseBuilder);
             mtMsgReceiveMap.put(companyId,msgReceive);
         }
     }
     /**
      * 获取接收数据对象
      * @param companyId
-     * @param token
+     * @param key
      * @return
      */
-    public static BaseBuilder getReceive(String companyId,String token){
+    public static BaseBuilder getReceive(String companyId,String key){
         if(mtMsgReceiveMap.get(companyId)!=null){
-            if(mtMsgReceiveMap.get(companyId).get(token)!=null){
-                return mtMsgReceiveMap.get(companyId).get(token);
+            if(mtMsgReceiveMap.get(companyId).get(key)!=null){
+                return mtMsgReceiveMap.get(companyId).get(key);
             }
         }
         return null;
@@ -118,11 +118,11 @@ public class MtMsgContainerUtil {
     /**
      * 移除接收数据对象
      * @param companyId
-     * @param token
+     * @param key
      */
-    public static void removeReceive(String companyId,String token){
+    public static void removeReceive(String companyId,String key){
         if(mtMsgReceiveMap.get(companyId)!=null){
-            mtMsgReceiveMap.get(companyId).remove(token);
+            mtMsgReceiveMap.get(companyId).remove(key);
         }
     }
 
@@ -130,28 +130,28 @@ public class MtMsgContainerUtil {
     /**
      *  添加发送数据对象
      * @param companyId
-     * @param token
+     * @param key
      * @param baseBuilder
      */
-    public static void putPush(String companyId,String token,BaseBuilder baseBuilder){
+    public static void putPush(String companyId,String key,BaseBuilder baseBuilder){
         if(mtMsgPushMap.get(companyId)!=null){
-                mtMsgPushMap.get(companyId).put(token,baseBuilder);
+                mtMsgPushMap.get(companyId).put(key,baseBuilder);
         }else{
             ConcurrentHashMap<String,BaseBuilder> connectPush=new ConcurrentHashMap();
-            connectPush.put(token,baseBuilder);
+            connectPush.put(key,baseBuilder);
             mtMsgPushMap.put(companyId,connectPush);
         }
     }
     /**
      * 获取接收数据对象
      * @param companyId
-     * @param token
+     * @param key
      * @return
      */
-    public static BaseBuilder getPush(String companyId,String token){
+    public static BaseBuilder getPush(String companyId,String key){
         if(mtMsgPushMap.get(companyId)!=null){
-            if(mtMsgPushMap.get(companyId).get(token)!=null){
-                return mtMsgPushMap.get(companyId).get(token);
+            if(mtMsgPushMap.get(companyId).get(key)!=null){
+                return mtMsgPushMap.get(companyId).get(key);
             }
         }
         return null;
@@ -159,11 +159,11 @@ public class MtMsgContainerUtil {
     /**
      *  移除发送数据对象
      * @param companyId
-     * @param token
+     * @param key
      */
-    public static void removePush(String companyId,String token){
+    public static void removePush(String companyId,String key){
         if(mtMsgPushMap.get(companyId)!=null){
-            mtMsgPushMap.get(companyId).remove(token);
+            mtMsgPushMap.get(companyId).remove(key);
         }
     }
 
