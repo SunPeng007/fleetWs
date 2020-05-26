@@ -28,12 +28,13 @@ public class MtMsgWebSocketServer {
      * @param companyId
      * @param type
      * @param uid
+     * @throws Exception
      */
     @OnOpen
     public void onOpen(Session session,
                        @PathParam("companyId")String companyId,
                        @PathParam("type") String type,
-                       @PathParam("uid") String uid)throws IOException {
+                       @PathParam("uid") String uid)throws Exception {
         try{
             logger.info("连接成功调用!");
         }catch (Exception e){
@@ -48,13 +49,13 @@ public class MtMsgWebSocketServer {
      * @param companyId
      * @param type
      * @param uid
-     * @throws IOException
+     * @throws Exception
      */
     @OnClose
     public void onClose(Session session,
                         @PathParam("companyId")String companyId,
                         @PathParam("type") String type,
-                        @PathParam("uid") String uid)throws IOException {
+                        @PathParam("uid") String uid)throws Exception {
         try{
             //移除当前连接
             logger.info("连接关闭调用!");
@@ -71,7 +72,7 @@ public class MtMsgWebSocketServer {
      * @param companyId
      * @param type
      * @param uid
-     * @throws IOException
+     * @throws Exception
      */
     @OnError
     public void onError(Session session, Throwable error,
@@ -94,7 +95,7 @@ public class MtMsgWebSocketServer {
      * @param companyId
      * @param type
      * @param uid
-     * @throws IOException
+     * @throws Exception
      */
     @OnMessage
     public void onMessage(String message,Session session,

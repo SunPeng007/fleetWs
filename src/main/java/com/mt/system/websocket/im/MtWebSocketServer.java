@@ -38,12 +38,13 @@ public class MtWebSocketServer {
      * 连接建立成功调用的方法
      * @param session
      * @param token
+     * @throws Exception
      */
     @OnOpen
     public void onOpen(Session session,
                        @PathParam("companyId")String companyId,
                        @PathParam("token") String token,
-                       @PathParam("groupId") String groupId)throws IOException {
+                       @PathParam("groupId") String groupId)throws Exception {
         try{
             MtContainerUtil.mtSessionMapPut(companyId,groupId,token,session);
             logger.info("连接成功调用!");
@@ -57,13 +58,13 @@ public class MtWebSocketServer {
      * 连接关闭调用的方法
      * @param session
      * @param token
-     * @throws IOException
+     * @throws Exception
      */
     @OnClose
     public void onClose(Session session,
                         @PathParam("companyId")String companyId,
                         @PathParam("groupId") String groupId,
-                        @PathParam("token") String token)throws IOException {
+                        @PathParam("token") String token)throws Exception {
         try{
             //移除当前连接
             MtContainerUtil.mtSessionMapRemove(companyId,groupId,token);
@@ -83,7 +84,7 @@ public class MtWebSocketServer {
     public void onError(Session session, Throwable error,
                         @PathParam("companyId")String companyId,
                         @PathParam("groupId") String groupId,
-                        @PathParam("token") String token)throws IOException {
+                        @PathParam("token") String token)throws Exception {
         try{
             //移除当前连接
             MtContainerUtil.mtSessionMapRemove(companyId,groupId,token);
