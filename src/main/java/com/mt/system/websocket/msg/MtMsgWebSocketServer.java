@@ -1,5 +1,6 @@
 package com.mt.system.websocket.msg;
 
+import com.mt.system.websocket.im.MtContainerUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -36,6 +37,8 @@ public class MtMsgWebSocketServer {
                        @PathParam("type") String type,
                        @PathParam("uid") String uid)throws Exception {
         try{
+            String token=type+"_"+uid;
+            MtMsgContainerUtil.putSession(companyId,token,session);
             logger.info("连接成功调用!");
         }catch (Exception e){
             e.printStackTrace();
@@ -57,7 +60,8 @@ public class MtMsgWebSocketServer {
                         @PathParam("type") String type,
                         @PathParam("uid") String uid)throws Exception {
         try{
-            //移除当前连接
+            String token=type+"_"+uid;
+            MtMsgContainerUtil.removeSession(companyId,token);
             logger.info("连接关闭调用!");
         }catch (Exception e){
             e.printStackTrace();
@@ -80,8 +84,9 @@ public class MtMsgWebSocketServer {
                         @PathParam("type") String type,
                         @PathParam("uid") String uid) throws Exception{
         try{
-            //移除当前连接
-            logger.info("发生错误时调用!");
+            String token=type+"_"+uid;
+            MtMsgContainerUtil.removeSession(companyId,token);
+            logger.info("发生错误时调用!"+error.getMessage());
         }catch (Exception e){
             e.printStackTrace();
             logger.error("发生错误时发生异常:"+e);

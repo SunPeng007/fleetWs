@@ -88,7 +88,7 @@ public class MtWebSocketServer {
         try{
             //移除当前连接
             MtContainerUtil.mtSessionMapRemove(companyId,groupId,token);
-            logger.info("发生错误时调用!");
+            logger.info("发生错误时调用!"+error.getMessage());
         }catch (Exception e){
             e.printStackTrace();
             logger.error("发生错误发生异常:"+e);
