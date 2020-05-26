@@ -1,10 +1,10 @@
-package com.mt.system.domain.entity.im;
+package com.mt.system.domain.entity;
 
 /**
  *  响应json数据包类
  * Created by chenpan on 4/27/18.
  */
-public class BaseBuilder implements Cloneable{
+public class BaseBuilder<T> implements Cloneable{
 
     /*请求类型*/
     private String requestType;
@@ -13,7 +13,7 @@ public class BaseBuilder implements Cloneable{
     /*消息*/
     private String msg;
     /*数据*/
-    private SynergyGroupRecord data;
+    private T data;
 
     /*响应类型*/
     private String responseType;
@@ -27,7 +27,7 @@ public class BaseBuilder implements Cloneable{
     private long pushTime;
 
     public BaseBuilder(){ }
-    public BaseBuilder(String serialNumber,String msg,SynergyGroupRecord data){
+    public BaseBuilder(String serialNumber,String msg,T data){
         this.serialNumber=serialNumber;
         this.msg=msg;
         this.data=data;
@@ -65,11 +65,11 @@ public class BaseBuilder implements Cloneable{
         this.msg = msg;
     }
 
-    public SynergyGroupRecord getData() {
+    public T getData() {
         return data;
     }
 
-    public void setData(SynergyGroupRecord data) {
+    public void setData(T data) {
         this.data = data;
     }
 

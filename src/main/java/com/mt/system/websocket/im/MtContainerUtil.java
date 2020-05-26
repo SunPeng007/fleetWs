@@ -1,8 +1,8 @@
 package com.mt.system.websocket.im;
 
 import com.mt.system.common.util.DateUtils;
-import com.mt.system.domain.entity.im.BaseBuilder;
-import com.mt.system.domain.entity.im.MtSession;
+import com.mt.system.domain.entity.BaseBuilder;
+import com.mt.system.domain.entity.MtSession;
 import javax.websocket.Session;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -16,9 +16,9 @@ import java.util.concurrent.ConcurrentHashMap;
 public class MtContainerUtil {
     //记录连接对象(公司-群-连接对象）
     private static ConcurrentHashMap<String,ConcurrentHashMap<String,ConcurrentHashMap<String,MtSession>>> mtSessionMap=new ConcurrentHashMap();
-    //记录服务器发送消息
+    //记录服务器发送消息(公司-群-消息对象）
     private static ConcurrentHashMap<String,ConcurrentHashMap<String,ConcurrentHashMap<String,BaseBuilder>>> mtPushMap = new ConcurrentHashMap();
-    //记录接收消息
+    //记录接收消息(公司-群-消息对象）
     private static ConcurrentHashMap<String,ConcurrentHashMap<String,ConcurrentHashMap<String,BaseBuilder>>> mtReceiveMap = new ConcurrentHashMap();
 
     public static ConcurrentHashMap<String,ConcurrentHashMap<String,ConcurrentHashMap<String,MtSession>>> getMtSessionMap(){

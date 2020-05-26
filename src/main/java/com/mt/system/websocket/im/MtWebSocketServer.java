@@ -7,8 +7,8 @@ import com.mt.system.common.util.HttpRequestUtils;
 import com.mt.system.common.util.JsonUtil;
 import com.mt.system.domain.constant.AsyncUrlConstant;
 import com.mt.system.domain.constant.TypeConstant;
-import com.mt.system.domain.entity.im.BaseBuilder;
-import com.mt.system.domain.entity.im.MtSession;
+import com.mt.system.domain.entity.BaseBuilder;
+import com.mt.system.domain.entity.MtSession;
 import com.mt.system.domain.entity.im.SynergyGroupRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -117,7 +117,7 @@ public class MtWebSocketServer {
                 MtContainerUtil.mtSessionMapPut(companyId,groupId,token,session);
             }
             //接收数据，-- 调用企业站点接口添加记录
-            BaseBuilder reqEntity = JsonUtil.toObject(message,BaseBuilder.class);
+            BaseBuilder<SynergyGroupRecord> reqEntity = JsonUtil.toObject(message,BaseBuilder.class);
             //发送key
             String keyStr=token+reqEntity.getSerialNumber();
             //判断回应类型
@@ -129,7 +129,7 @@ public class MtWebSocketServer {
                 MtContainerUtil.mtPushRemove(companyId,groupId,keyStr);
             }else{
                 //判断该消息是否发送过
-                BaseBuilder builder = MtContainerUtil.getMtReceiveMap(companyId,groupId,keyStr);
+                BaseBuilder<SynergyGroupRecord> builder = MtContainerUtil.getMtReceiveMap(companyId,groupId,keyStr);
                 if(builder==null){
                     reqEntity.getData().setSendTime(DateUtils.getDateTime());
                     reqEntity.setPushTime(DateUtils.currentTimeMilli());
@@ -155,7 +155,7 @@ public class MtWebSocketServer {
      * @param groupId
      * @throws Exception
      */
-    public void servicePushUser(String webUrl,BaseBuilder reqEntity,String companyId,String token,String groupId)throws Exception{
+    public void servicePushUser(String webUrl,BaseBuilder<SynergyGroupRecord> reqEntity,String companyId,String token,String groupId)throws Exception{
         reqEntity.getData().setDeviceType(reqEntity.getRequestType());
         /*访问企业站点-添加记录*/
         if(!webUrl.contains("http://")){
@@ -172,7 +172,7 @@ public class MtWebSocketServer {
         SynergyGroupRecord serEntity=(SynergyGroupRecord)BeanToMapUtil.convertMap(SynergyGroupRecord.class,dataMap);
         /*创建发送消息数据*/
         String uuid = "server_"+java.util.UUID.randomUUID().toString();//生成uuid 作为流水号
-        BaseBuilder pushNews = new BaseBuilder(uuid,"服务器推送消息!",serEntity);
+        BaseBuilder<SynergyGroupRecord> pushNews = new BaseBuilder(uuid,"服务器推送消息!",serEntity);
         pushNews.setResponseType(TypeConstant.RESPONSE_PUSH_TYPE); //设置响应类型
         pushNews.setPustNumber(1);//发送次数
         Integer timeStamp=Integer.valueOf(serEntity.getSendTime());
@@ -187,11 +187,11 @@ public class MtWebSocketServer {
                 if(!key.equals(token) && mtSes!=null){
                     mtSendText(mtSes.getSession(),companyId,groupId,pushNews);
                     //记录发送消息给谁
-                    BaseBuilder resEntity =pushNews.clone();
+                    BaseBuilder<SynergyGroupRecord> resEntity =pushNews.clone();
                     addMtEcho(resEntity,1,token,companyId,groupId,key);
                 }else{
                     //给当前连接发消息提示成功
-                    BaseBuilder resultUs=pushNews.clone();
+                    BaseBuilder<SynergyGroupRecord> resultUs=pushNews.clone();
                     resultUs.setMsg("响应客户端消息!");
                     resultUs.setResponseType(TypeConstant.RESPONSE_SUCCESS_TYPE);//设置响应类型
                     mtSendText(mtSes.getSession(),companyId,groupId,resultUs);
@@ -206,7 +206,7 @@ public class MtWebSocketServer {
      * @param pustToken
      * @param receiveToken
      */
-    private void addMtEcho(BaseBuilder resEntity,int pustNumber,String pustToken,String companyId,String groupId,String receiveToken){
+    private void addMtEcho(BaseBuilder<SynergyGroupRecord> resEntity,int pustNumber,String pustToken,String companyId,String groupId,String receiveToken){
         resEntity.setPustNumber(pustNumber);
         resEntity.setPustToken(pustToken);
         resEntity.setReceiveToken(receiveToken);
@@ -219,7 +219,7 @@ public class MtWebSocketServer {
      * @param session
      * @param baseBuilder
      */
-    public static void mtSendText(Session session,String companyId,String groupId,BaseBuilder baseBuilder){
+    public static void mtSendText(Session session,String companyId,String groupId,BaseBuilder<SynergyGroupRecord> baseBuilder){
         try {
             if(session!=null){
                 session.getBasicRemote().sendText(JSONObject.toJSONString(baseBuilder));

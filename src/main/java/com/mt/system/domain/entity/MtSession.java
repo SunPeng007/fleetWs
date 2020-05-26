@@ -1,4 +1,4 @@
-package com.mt.system.domain.entity.im;
+package com.mt.system.domain.entity;
 
 import javax.websocket.Session;
 

@@ -2,7 +2,7 @@ package com.mt.system.domain.thread.im;
 
 import com.mt.system.common.util.DateUtils;
 import com.mt.system.domain.constant.ConnectTimeConstant;
-import com.mt.system.domain.entity.im.BaseBuilder;
+import com.mt.system.domain.entity.BaseBuilder;
 import com.mt.system.websocket.im.MtContainerUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
