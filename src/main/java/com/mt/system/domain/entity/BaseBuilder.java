@@ -20,11 +20,11 @@ public class BaseBuilder<T> implements Cloneable{
     /*发送token*/
     private String pustToken;
     /*发送次数*/
-    private int pustNumber;
+    private Integer pustNumber;
     /*接收token*/
     private String receiveToken;
     /*服务器推送:发送时间*/
-    private long pushTime;
+    private Long pushTime;
 
     public BaseBuilder(){ }
     public BaseBuilder(String serialNumber,String msg,T data){
@@ -81,11 +81,11 @@ public class BaseBuilder<T> implements Cloneable{
         this.pustToken = pustToken;
     }
 
-    public int getPustNumber() {
+    public Integer getPustNumber() {
         return pustNumber;
     }
 
-    public void setPustNumber(int pustNumber) {
+    public void setPustNumber(Integer pustNumber) {
         this.pustNumber = pustNumber;
     }
 
@@ -97,11 +97,11 @@ public class BaseBuilder<T> implements Cloneable{
         this.receiveToken = receiveToken;
     }
 
-    public long getPushTime() {
+    public Long getPushTime() {
         return pushTime;
     }
 
-    public void setPushTime(long pushTime) {
+    public void setPushTime(Long pushTime) {
         this.pushTime = pushTime;
     }
 
