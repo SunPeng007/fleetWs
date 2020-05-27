@@ -162,7 +162,7 @@ public class MtContainerUtil {
      *  添加发送数据对象
      * @param companyId
      * @param groupId
-     * @param token
+     * @param key
      * @param baseBuilder
      */
     public static void mtPushMapPut(String companyId,String groupId,String key,BaseBuilder baseBuilder){
