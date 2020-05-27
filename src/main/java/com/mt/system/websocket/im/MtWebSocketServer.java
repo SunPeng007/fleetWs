@@ -119,7 +119,7 @@ public class MtWebSocketServer {
             }
             //接收数据，-- 调用企业站点接口添加记录
             BaseBuilder<SynergyGroupRecord> reqEntity = JsonUtil.toObject(message,BaseBuilder.class);
-            //发送key
+            //key
             String keyStr=token+reqEntity.getSerialNumber();
             //判断回应类型
             if(TypeConstant.REQUEST_PING_TYPE.equals(reqEntity.getRequestType())){
