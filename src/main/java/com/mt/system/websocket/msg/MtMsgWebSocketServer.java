@@ -53,7 +53,7 @@ public class MtMsgWebSocketServer {
             logger.info("连接成功调用!");
         }catch (Exception e){
             e.printStackTrace();
-            logger.error("连接发生异常:"+e);
+            logger.error("连接发生异常:"+e.getMessage(),e);
             throw e;
         }
     }
@@ -76,7 +76,7 @@ public class MtMsgWebSocketServer {
             logger.info("连接关闭调用!");
         }catch (Exception e){
             e.printStackTrace();
-            logger.error("连接关闭发生异常:"+e);
+            logger.error("连接关闭发生异常:"+e.getMessage(),e);
             throw e;
         }
     }
@@ -100,7 +100,7 @@ public class MtMsgWebSocketServer {
             logger.info("发生错误时调用!"+error.getMessage());
         }catch (Exception e){
             e.printStackTrace();
-            logger.error("发生错误时发生异常:"+e);
+            logger.error("发生错误时发生异常:"+e.getMessage(),e);
             throw e;
         }
     }
@@ -154,7 +154,7 @@ public class MtMsgWebSocketServer {
             }
         } catch (Exception e) {
             e.printStackTrace();
-            logger.error("收到客户端消息后发生异常:" + e);
+            logger.error("收到客户端消息后发生异常:" +e.getMessage(),e);
             throw e;
         }
     }
@@ -236,7 +236,7 @@ public class MtMsgWebSocketServer {
             String keyStr=baseBuilder.getReceiveToken()+baseBuilder.getSerialNumber();
             MtMsgContainerUtil.putPush(companyId,keyStr,baseBuilder);
             e.printStackTrace();
-            logger.error("发送消息发生异常："+e);
+            logger.error("发送消息发生异常："+e.getMessage(),e);
         }
     }
 
