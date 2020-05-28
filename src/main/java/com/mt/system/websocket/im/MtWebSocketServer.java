@@ -193,7 +193,7 @@ public class MtWebSocketServer {
                     addMtEcho(resEntity,1,token,companyId,groupId,key);
                 }else{
                     //给当前连接发消息提示成功
-                    BaseBuilder<SynergyGroupRecord> resultUs=pushNews.clone();
+                    BaseBuilder<SynergyGroupRecord> resultUs=reqEntity.clone();
                     resultUs.setMsg("响应客户端消息!");
                     resultUs.setResponseType(TypeConstant.RESPONSE_SUCCESS_TYPE);//设置响应类型
                     mtSendText(mtSes.getSession(),companyId,groupId,resultUs);
