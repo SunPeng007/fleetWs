@@ -1,6 +1,8 @@
 package com.mt.system.websocket.im;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.TypeReference;
 import com.mt.system.common.util.BeanToMapUtil;
 import com.mt.system.common.util.DateUtils;
 import com.mt.system.common.util.HttpRequestUtils;
@@ -50,7 +52,7 @@ public class MtWebSocketServer {
             logger.info("连接成功调用!");
         }catch (Exception e){
             e.printStackTrace();
-            logger.error("连接发生异常:"+e);
+            logger.error("连接发生异常:"+e.getMessage(),e);
             throw e;
         }
     }
@@ -71,7 +73,7 @@ public class MtWebSocketServer {
             logger.info("连接关闭调用!");
         }catch (Exception e){
             e.printStackTrace();
-            logger.error("连接关闭发生异常:"+e);
+            logger.error("连接关闭发生异常:"+e.getMessage(),e);
             throw e;
         }
     }
@@ -91,7 +93,7 @@ public class MtWebSocketServer {
             logger.info("发生错误时调用!"+error.getMessage());
         }catch (Exception e){
             e.printStackTrace();
-            logger.error("发生错误发生异常:"+e);
+            logger.error("发生错误发生异常:"+e.getMessage(),e);
             throw e;
         }
     }
@@ -118,8 +120,7 @@ public class MtWebSocketServer {
                 MtContainerUtil.mtSessionMapPut(companyId,groupId,token,session);
             }
             //接收数据，-- 调用企业站点接口添加记录
-            BaseBuilder<SynergyGroupRecord> reqEntity = JsonUtil.toObject(message,BaseBuilder.class);
-            //key
+            BaseBuilder<SynergyGroupRecord> reqEntity = JSON.parseObject(message, new TypeReference<BaseBuilder<SynergyGroupRecord>>(){});
             String keyStr=token+reqEntity.getSerialNumber();
             //判断回应类型
             if(TypeConstant.REQUEST_PING_TYPE.equals(reqEntity.getRequestType())){
@@ -143,7 +144,7 @@ public class MtWebSocketServer {
             }
         }catch (Exception e){
             e.printStackTrace();
-            logger.error("收到客户端消息发生异常:"+e);
+            logger.error("收到客户端消息发生异常:"+e.getMessage(),e);
             throw e;
         }
     }
@@ -233,7 +234,7 @@ public class MtWebSocketServer {
             String keyStr=baseBuilder.getReceiveToken()+baseBuilder.getSerialNumber();
             MtContainerUtil.mtPushMapPut(companyId,groupId,keyStr,baseBuilder);
             e.printStackTrace();
-            logger.error("发送消息发生异常："+e);
+            logger.error("发送消息发生异常："+e.getMessage(),e);
         }
     }
 }
