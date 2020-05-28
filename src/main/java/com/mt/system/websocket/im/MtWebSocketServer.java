@@ -1,6 +1,8 @@
 package com.mt.system.websocket.im;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.TypeReference;
 import com.mt.system.common.util.BeanToMapUtil;
 import com.mt.system.common.util.DateUtils;
 import com.mt.system.common.util.HttpRequestUtils;
@@ -118,8 +120,7 @@ public class MtWebSocketServer {
                 MtContainerUtil.mtSessionMapPut(companyId,groupId,token,session);
             }
             //接收数据，-- 调用企业站点接口添加记录
-            BaseBuilder<SynergyGroupRecord> reqEntity = JsonUtil.toObject(message,BaseBuilder.class);
-            //key
+            BaseBuilder<SynergyGroupRecord> reqEntity = JSON.parseObject(message, new TypeReference<BaseBuilder<SynergyGroupRecord>>(){});
             String keyStr=token+reqEntity.getSerialNumber();
             //判断回应类型
             if(TypeConstant.REQUEST_PING_TYPE.equals(reqEntity.getRequestType())){

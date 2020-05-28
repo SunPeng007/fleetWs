@@ -1,11 +1,14 @@
 package com.mt.system.websocket.msg;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.TypeReference;
 import com.mt.system.common.util.DateUtils;
 import com.mt.system.common.util.JsonUtil;
 import com.mt.system.domain.constant.TypeConstant;
 import com.mt.system.domain.entity.BaseBuilder;
 import com.mt.system.domain.entity.MtSession;
+import com.mt.system.domain.entity.im.SynergyGroupRecord;
 import com.mt.system.domain.entity.msg.PushMessage;
 import com.mt.system.domain.entity.msg.ReceiveMessage;
 import com.mt.system.domain.entity.msg.UserMessage;
@@ -126,7 +129,7 @@ public class MtMsgWebSocketServer {
                 MtMsgContainerUtil.putSession(companyId,token,session);
             }
             //接收数据，-- 调用企业站点接口添加记录
-            BaseBuilder<ReceiveMessage> reqEntity = JsonUtil.toObject(message,BaseBuilder.class);
+            BaseBuilder<ReceiveMessage> reqEntity = JSON.parseObject(message, new TypeReference<BaseBuilder<ReceiveMessage>>(){});
             //key
             String keyStr=token+reqEntity.getSerialNumber();
             //判断回应类型
