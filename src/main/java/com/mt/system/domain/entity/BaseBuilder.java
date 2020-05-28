@@ -4,7 +4,7 @@ package com.mt.system.domain.entity;
  *  响应json数据包类
  * Created by chenpan on 4/27/18.
  */
-public class BaseBuilder implements Cloneable{
+public class BaseBuilder<T> implements Cloneable{
 
     /*请求类型*/
     private String requestType;
@@ -13,21 +13,21 @@ public class BaseBuilder implements Cloneable{
     /*消息*/
     private String msg;
     /*数据*/
-    private SynergyGroupRecord data;
+    private T data;
 
     /*响应类型*/
     private String responseType;
     /*发送token*/
     private String pustToken;
     /*发送次数*/
-    private int pustNumber;
+    private Integer pustNumber;
     /*接收token*/
     private String receiveToken;
     /*服务器推送:发送时间*/
-    private long pushTime;
+    private Long pushTime;
 
     public BaseBuilder(){ }
-    public BaseBuilder(String serialNumber,String msg,SynergyGroupRecord data){
+    public BaseBuilder(String serialNumber,String msg,T data){
         this.serialNumber=serialNumber;
         this.msg=msg;
         this.data=data;
@@ -65,11 +65,11 @@ public class BaseBuilder implements Cloneable{
         this.msg = msg;
     }
 
-    public SynergyGroupRecord getData() {
+    public T getData() {
         return data;
     }
 
-    public void setData(SynergyGroupRecord data) {
+    public void setData(T data) {
         this.data = data;
     }
 
@@ -81,11 +81,11 @@ public class BaseBuilder implements Cloneable{
         this.pustToken = pustToken;
     }
 
-    public int getPustNumber() {
+    public Integer getPustNumber() {
         return pustNumber;
     }
 
-    public void setPustNumber(int pustNumber) {
+    public void setPustNumber(Integer pustNumber) {
         this.pustNumber = pustNumber;
     }
 
@@ -97,11 +97,11 @@ public class BaseBuilder implements Cloneable{
         this.receiveToken = receiveToken;
     }
 
-    public long getPushTime() {
+    public Long getPushTime() {
         return pushTime;
     }
 
-    public void setPushTime(long pushTime) {
+    public void setPushTime(Long pushTime) {
         this.pushTime = pushTime;
     }
 

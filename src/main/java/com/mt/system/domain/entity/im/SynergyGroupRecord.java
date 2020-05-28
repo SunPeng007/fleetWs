@@ -1,4 +1,4 @@
-package com.mt.system.domain.entity;
+package com.mt.system.domain.entity.im;
 
 public class SynergyGroupRecord {
     private Long id;
