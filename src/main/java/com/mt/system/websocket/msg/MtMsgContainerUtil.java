@@ -3,8 +3,14 @@ package com.mt.system.websocket.msg;
 import com.mt.system.common.util.DateUtils;
 import com.mt.system.domain.entity.BaseBuilder;
 import com.mt.system.domain.entity.MtSession;
+import com.mt.system.domain.entity.msg.PushMessage;
+import com.mt.system.domain.entity.msg.ReceiveMessage;
 
 import javax.websocket.Session;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -17,19 +23,29 @@ import java.util.concurrent.ConcurrentHashMap;
 public class MtMsgContainerUtil {
     //记录连接对象(公司-连接对象）
     private static ConcurrentHashMap<String,ConcurrentHashMap<String,MtSession>> mtMsgSessionMap=new ConcurrentHashMap();
-    //记录服务器发送消息(公司-消息对象）
-    private static ConcurrentHashMap<String,ConcurrentHashMap<String, BaseBuilder>> mtMsgPushMap = new ConcurrentHashMap();
+    //记录服务器向客户端发送消息(公司-消息对象）
+    private static ConcurrentHashMap<String,ConcurrentHashMap<String, BaseBuilder<PushMessage>>> mtMsgPushMap = new ConcurrentHashMap();
     //记录接收消息(公司-消息对象）
-    private static ConcurrentHashMap<String,ConcurrentHashMap<String,BaseBuilder>> mtMsgReceiveMap = new ConcurrentHashMap();
+    private static ConcurrentHashMap<String,ConcurrentHashMap<String,BaseBuilder<ReceiveMessage>>> mtMsgReceiveMap = new ConcurrentHashMap();
+    //类型终端，PC、APP、H5
+    private static List<String> mtMsgTypeList= new ArrayList<String>(){{
+        add("PC");
+        add("APP");
+        add("H5");
+    }};
+
     /*--静态get函数--*/
     public static ConcurrentHashMap<String,ConcurrentHashMap<String,MtSession>> getMtMsgSessionMap(){
         return mtMsgSessionMap;
     }
-    public static ConcurrentHashMap<String,ConcurrentHashMap<String,BaseBuilder>> getMtMsgPushMap(){
+    public static ConcurrentHashMap<String,ConcurrentHashMap<String,BaseBuilder<PushMessage>>> getMtMsgPushMap(){
         return mtMsgPushMap;
     }
-    public static ConcurrentHashMap<String,ConcurrentHashMap<String,BaseBuilder>> getMtMsgReceiveMap(){
+    public static ConcurrentHashMap<String,ConcurrentHashMap<String,BaseBuilder<ReceiveMessage>>> getMtMsgReceiveMap(){
         return mtMsgReceiveMap;
+    }
+    public static List<String> getMtMsgTypeList(){
+        return mtMsgTypeList;
     }
 
     /*===================操作连接对象======================*/
@@ -89,14 +105,14 @@ public class MtMsgContainerUtil {
     /**
      *  添加接收数据对象
      * @param companyId
-     * @param token
+     * @param key
      * @param baseBuilder
      */
-    public static void putReceive(String companyId,String key,BaseBuilder baseBuilder){
+    public static void putReceive(String companyId,String key,BaseBuilder<ReceiveMessage> baseBuilder){
         if(mtMsgReceiveMap.get(companyId)!=null){
                 mtMsgReceiveMap.get(companyId).put(key,baseBuilder);
         }else{
-            ConcurrentHashMap<String,BaseBuilder> msgReceive=new ConcurrentHashMap();
+            ConcurrentHashMap<String,BaseBuilder<ReceiveMessage>> msgReceive=new ConcurrentHashMap();
             msgReceive.put(key,baseBuilder);
             mtMsgReceiveMap.put(companyId,msgReceive);
         }
@@ -107,7 +123,7 @@ public class MtMsgContainerUtil {
      * @param key
      * @return
      */
-    public static BaseBuilder getReceive(String companyId,String key){
+    public static BaseBuilder<ReceiveMessage> getReceive(String companyId,String key){
         if(mtMsgReceiveMap.get(companyId)!=null){
             if(mtMsgReceiveMap.get(companyId).get(key)!=null){
                 return mtMsgReceiveMap.get(companyId).get(key);
@@ -133,11 +149,11 @@ public class MtMsgContainerUtil {
      * @param key
      * @param baseBuilder
      */
-    public static void putPush(String companyId,String key,BaseBuilder baseBuilder){
+    public static void putPush(String companyId,String key,BaseBuilder<PushMessage> baseBuilder){
         if(mtMsgPushMap.get(companyId)!=null){
                 mtMsgPushMap.get(companyId).put(key,baseBuilder);
         }else{
-            ConcurrentHashMap<String,BaseBuilder> connectPush=new ConcurrentHashMap();
+            ConcurrentHashMap<String,BaseBuilder<PushMessage>> connectPush=new ConcurrentHashMap();
             connectPush.put(key,baseBuilder);
             mtMsgPushMap.put(companyId,connectPush);
         }
@@ -148,7 +164,7 @@ public class MtMsgContainerUtil {
      * @param key
      * @return
      */
-    public static BaseBuilder getPush(String companyId,String key){
+    public static BaseBuilder<PushMessage> getPush(String companyId,String key){
         if(mtMsgPushMap.get(companyId)!=null){
             if(mtMsgPushMap.get(companyId).get(key)!=null){
                 return mtMsgPushMap.get(companyId).get(key);

@@ -3,6 +3,8 @@ package com.mt.system.websocket.im;
 import com.mt.system.common.util.DateUtils;
 import com.mt.system.domain.entity.BaseBuilder;
 import com.mt.system.domain.entity.MtSession;
+import com.mt.system.domain.entity.im.SynergyGroupRecord;
+
 import javax.websocket.Session;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -17,17 +19,17 @@ public class MtContainerUtil {
     //记录连接对象(公司-群-连接对象）
     private static ConcurrentHashMap<String,ConcurrentHashMap<String,ConcurrentHashMap<String,MtSession>>> mtSessionMap=new ConcurrentHashMap();
     //记录服务器发送消息(公司-群-消息对象）
-    private static ConcurrentHashMap<String,ConcurrentHashMap<String,ConcurrentHashMap<String,BaseBuilder>>> mtPushMap = new ConcurrentHashMap();
+    private static ConcurrentHashMap<String,ConcurrentHashMap<String,ConcurrentHashMap<String,BaseBuilder<SynergyGroupRecord>>>> mtPushMap = new ConcurrentHashMap();
     //记录接收消息(公司-群-消息对象）
-    private static ConcurrentHashMap<String,ConcurrentHashMap<String,ConcurrentHashMap<String,BaseBuilder>>> mtReceiveMap = new ConcurrentHashMap();
+    private static ConcurrentHashMap<String,ConcurrentHashMap<String,ConcurrentHashMap<String,BaseBuilder<SynergyGroupRecord>>>> mtReceiveMap = new ConcurrentHashMap();
     /*--静态get函数--*/
     public static ConcurrentHashMap<String,ConcurrentHashMap<String,ConcurrentHashMap<String,MtSession>>> getMtSessionMap(){
         return mtSessionMap;
     }
-    public static ConcurrentHashMap<String,ConcurrentHashMap<String,ConcurrentHashMap<String,BaseBuilder>>> getMtPushMap(){
+    public static ConcurrentHashMap<String,ConcurrentHashMap<String,ConcurrentHashMap<String,BaseBuilder<SynergyGroupRecord>>>> getMtPushMap(){
         return mtPushMap;
     }
-    public static ConcurrentHashMap<String,ConcurrentHashMap<String,ConcurrentHashMap<String,BaseBuilder>>> getMtReceiveMap(){
+    public static ConcurrentHashMap<String,ConcurrentHashMap<String,ConcurrentHashMap<String,BaseBuilder<SynergyGroupRecord>>>> getMtReceiveMap(){
         return mtReceiveMap;
     }
 
@@ -109,19 +111,19 @@ public class MtContainerUtil {
      * @param key
      * @param baseBuilder
      */
-    public static void mtReceiveMapPut(String companyId,String groupId,String key,BaseBuilder baseBuilder){
+    public static void mtReceiveMapPut(String companyId,String groupId,String key,BaseBuilder<SynergyGroupRecord> baseBuilder){
         if(mtReceiveMap.get(companyId)!=null){
             if(mtReceiveMap.get(companyId).get(groupId)!=null){
                 mtReceiveMap.get(companyId).get(groupId).put(key,baseBuilder);
             }else{
-                ConcurrentHashMap<String,BaseBuilder> msgReceive=new ConcurrentHashMap();
+                ConcurrentHashMap<String,BaseBuilder<SynergyGroupRecord>> msgReceive=new ConcurrentHashMap();
                 msgReceive.put(key,baseBuilder);
                 mtReceiveMap.get(companyId).put(groupId,msgReceive);
             }
         }else{
-            ConcurrentHashMap<String,BaseBuilder> msgReceive=new ConcurrentHashMap();
+            ConcurrentHashMap<String,BaseBuilder<SynergyGroupRecord>> msgReceive=new ConcurrentHashMap();
             msgReceive.put(key,baseBuilder);
-            ConcurrentHashMap<String,ConcurrentHashMap<String,BaseBuilder>> groupPush = new ConcurrentHashMap<>();
+            ConcurrentHashMap<String,ConcurrentHashMap<String,BaseBuilder<SynergyGroupRecord>>> groupPush = new ConcurrentHashMap<>();
             groupPush.put(groupId,msgReceive);
             mtReceiveMap.put(companyId,groupPush);
         }
@@ -133,7 +135,7 @@ public class MtContainerUtil {
      * @param key
      * @return
      */
-    public static BaseBuilder getMtReceiveMap(String companyId,String groupId,String key){
+    public static BaseBuilder<SynergyGroupRecord> getMtReceiveMap(String companyId,String groupId,String key){
         if(mtReceiveMap.get(companyId)!=null){
             if(mtReceiveMap.get(companyId).get(groupId)!=null){
                 if(mtReceiveMap.get(companyId).get(groupId).get(key)!=null){
@@ -165,19 +167,19 @@ public class MtContainerUtil {
      * @param key
      * @param baseBuilder
      */
-    public static void mtPushMapPut(String companyId,String groupId,String key,BaseBuilder baseBuilder){
+    public static void mtPushMapPut(String companyId,String groupId,String key,BaseBuilder<SynergyGroupRecord> baseBuilder){
         if(mtPushMap.get(companyId)!=null){
             if(mtPushMap.get(companyId).get(groupId)!=null){
                 mtPushMap.get(companyId).get(groupId).put(key,baseBuilder);
             }else{
-                ConcurrentHashMap<String,BaseBuilder> connectPush=new ConcurrentHashMap();
+                ConcurrentHashMap<String,BaseBuilder<SynergyGroupRecord>> connectPush=new ConcurrentHashMap();
                 connectPush.put(key,baseBuilder);
                 mtPushMap.get(companyId).put(groupId,connectPush);
             }
         }else{
-            ConcurrentHashMap<String,BaseBuilder> connectPush=new ConcurrentHashMap();
+            ConcurrentHashMap<String,BaseBuilder<SynergyGroupRecord>> connectPush=new ConcurrentHashMap();
             connectPush.put(key,baseBuilder);
-            ConcurrentHashMap<String,ConcurrentHashMap<String,BaseBuilder>> groupPush = new ConcurrentHashMap<>();
+            ConcurrentHashMap<String,ConcurrentHashMap<String,BaseBuilder<SynergyGroupRecord>>> groupPush = new ConcurrentHashMap<>();
             groupPush.put(groupId,connectPush);
             mtPushMap.put(companyId,groupPush);
         }
@@ -189,7 +191,7 @@ public class MtContainerUtil {
      * @param key
      * @return
      */
-    public static BaseBuilder getMtPushMap(String companyId,String groupId,String key){
+    public static BaseBuilder<SynergyGroupRecord> getMtPushMap(String companyId,String groupId,String key){
         if(mtPushMap.get(companyId)!=null){
             if(mtPushMap.get(companyId).get(groupId)!=null){
                 if(mtPushMap.get(companyId).get(groupId).get(key)!=null){

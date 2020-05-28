@@ -1,13 +1,21 @@
 package com.mt.system.websocket.msg;
 
-import com.mt.system.websocket.im.MtContainerUtil;
+import com.alibaba.fastjson.JSONObject;
+import com.mt.system.common.util.DateUtils;
+import com.mt.system.common.util.JsonUtil;
+import com.mt.system.domain.constant.TypeConstant;
+import com.mt.system.domain.entity.BaseBuilder;
+import com.mt.system.domain.entity.MtSession;
+import com.mt.system.domain.entity.msg.PushMessage;
+import com.mt.system.domain.entity.msg.ReceiveMessage;
+import com.mt.system.domain.entity.msg.UserMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import javax.websocket.*;
 import javax.websocket.server.PathParam;
 import javax.websocket.server.ServerEndpoint;
-import java.io.IOException;
+import java.util.List;
 
 /**
  * Created with IDEA
@@ -108,11 +116,125 @@ public class MtMsgWebSocketServer {
                           @PathParam("type") String type,
                           @PathParam("uid") String uid)throws Exception {
         try {
-
+            String token=type+"_"+uid;
+            logger.info("收到客户端消息!");
+            //更新当前连接时间
+            MtSession mtSession = MtMsgContainerUtil.getSession(companyId,token);
+            if(mtSession!=null){
+                mtSession.setConnectTime(DateUtils.currentTimeMilli());
+            }else{
+                MtMsgContainerUtil.putSession(companyId,token,session);
+            }
+            //接收数据，-- 调用企业站点接口添加记录
+            BaseBuilder<ReceiveMessage> reqEntity = JsonUtil.toObject(message,BaseBuilder.class);
+            //key
+            String keyStr=token+reqEntity.getSerialNumber();
+            //判断回应类型
+            if(TypeConstant.REQUEST_PING_TYPE.equals(reqEntity.getRequestType())){
+                //ping-客户端心跳，不做任何操作
+            }else if(TypeConstant.REQUEST_RESPONSE_TYPE.equals(reqEntity.getRequestType())){
+                //服务器发送消息，客户端回应
+                //移除-服务器发送消息
+                MtMsgContainerUtil.removePush(companyId,keyStr);
+            }else{
+                //客户端向服务端发送消息
+                //判断该消息是否接收过
+                BaseBuilder<ReceiveMessage> builder = MtMsgContainerUtil.getReceive(companyId,keyStr);
+                if(builder==null){
+                    reqEntity.setPushTime(DateUtils.currentTimeMilli());
+                    reqEntity.setPustToken(token);//发送人token
+                    //添加接收消息
+                    MtMsgContainerUtil.putReceive(companyId,keyStr,reqEntity);
+                    /*接收到客户端信息-服务端推消息给用户*/
+                    servicePushUser(reqEntity,companyId,token);
+                }
+            }
         } catch (Exception e) {
             e.printStackTrace();
             logger.error("收到客户端消息后发生异常:" + e);
             throw e;
         }
     }
+
+    /**
+     * 接收到客户端信息-服务端推消息给用户
+     * @param reqEntity
+     * @param companyId
+     * @param token
+     * @throws Exception
+     */
+    public static void servicePushUser(BaseBuilder<ReceiveMessage> reqEntity, String companyId, String token)throws Exception{
+        List<UserMessage> userMessageList=reqEntity.getData().getUserMsgList();
+        if(userMessageList!=null && userMessageList.size()>0){
+            for (UserMessage userMessage:userMessageList) {
+                //构造发生消息对象
+                PushMessage pushMessage=new PushMessage();
+                pushMessage.setMsgCount(userMessage.getMsgCount());
+                pushMessage.setMsgData(reqEntity.getData().getMsgData());
+                pushMessage.setMsgType(reqEntity.getData().getMsgType());
+                String uuid = "serverMsg_"+java.util.UUID.randomUUID().toString();//生成uuid 作为流水号
+                BaseBuilder<PushMessage> pushNews = new BaseBuilder(uuid,"服务器推送消息!",pushMessage);
+                pushNews.setResponseType(TypeConstant.RESPONSE_PUSH_TYPE); //设置响应类型
+                pushNews.setPustNumber(1);//发送次数
+                List<String> typeList = MtMsgContainerUtil.getMtMsgTypeList();
+                for (String type:typeList){
+                    String receiveToken=type+"_"+userMessage.getUid();
+                    MtSession mtSes=MtMsgContainerUtil.getSession(companyId,token);
+                    if(!receiveToken.equals(token) && mtSes!=null){
+                        sendMsg(mtSes.getSession(),companyId,pushNews);
+                        //记录发送消息给谁
+                        BaseBuilder<PushMessage> resEntity =pushNews.clone();
+                        addMtEcho(resEntity,1,token,companyId,receiveToken);
+                    }else{
+                        //不是后台通过http接口调用。需要告诉发送者，服务端已经收到消息。
+                        if(!reqEntity.getRequestType().equals(TypeConstant.REQUEST_SERVICE_TYPE)){
+                            //给当前连接发消息提示成功
+                            BaseBuilder<PushMessage> resultUs=pushNews.clone();
+                            resultUs.setMsg("响应客户端消息!");
+                            resultUs.setResponseType(TypeConstant.RESPONSE_SUCCESS_TYPE);//设置响应类型
+                            sendMsg(mtSes.getSession(),companyId,resultUs);
+                        }
+                    }
+                }
+            }
+        }
+    }
+    /**
+     * 记录发送消息给谁
+     * @param resEntity
+     * @param pustNumber
+     * @param pustToken
+     * @param receiveToken
+     */
+    private static void addMtEcho(BaseBuilder<PushMessage> resEntity,int pustNumber,String pustToken,String companyId,String receiveToken){
+        resEntity.setPustNumber(pustNumber);
+        resEntity.setPustToken(pustToken);
+        resEntity.setReceiveToken(receiveToken);
+        resEntity.setPushTime(DateUtils.currentTimeMilli());
+        String keyStr=receiveToken+resEntity.getSerialNumber();
+        MtMsgContainerUtil.putPush(companyId,keyStr,resEntity);
+    }
+
+    /**
+     * 发送消息
+     * @param session
+     * @param baseBuilder
+     */
+    public static void sendMsg(Session session,String companyId,BaseBuilder<PushMessage> baseBuilder){
+        try {
+            if(session!=null){
+                session.getBasicRemote().sendText(JSONObject.toJSONString(baseBuilder));
+            }
+        } catch (Exception e) {
+            //判断发送次数
+            if(baseBuilder.getPustNumber()==null){
+                baseBuilder.setPustNumber(0);
+            }
+            String keyStr=baseBuilder.getReceiveToken()+baseBuilder.getSerialNumber();
+            MtMsgContainerUtil.putPush(companyId,keyStr,baseBuilder);
+            e.printStackTrace();
+            logger.error("发送消息发生异常："+e);
+        }
+    }
+
 }

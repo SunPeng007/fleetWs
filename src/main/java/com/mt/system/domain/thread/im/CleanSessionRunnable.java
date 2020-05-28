@@ -36,7 +36,7 @@ public class CleanSessionRunnable implements Runnable{
                 Thread.sleep(ConnectTimeConstant.CLOSE_SESSION_TIME_CODE);//睡10分钟
             }catch (Exception e) {
                 e.printStackTrace();
-                logger.error("重发异常:"+e);
+                logger.error("清除连接异常:"+e);
             }
         }
     }

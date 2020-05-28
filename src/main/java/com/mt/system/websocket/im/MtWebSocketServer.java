@@ -129,7 +129,7 @@ public class MtWebSocketServer {
                 //移除-服务器发送消息
                 MtContainerUtil.mtPushRemove(companyId,groupId,keyStr);
             }else{
-                //判断该消息是否发送过
+                //判断该消息是否接收过
                 BaseBuilder<SynergyGroupRecord> builder = MtContainerUtil.getMtReceiveMap(companyId,groupId,keyStr);
                 if(builder==null){
                     reqEntity.getData().setSendTime(DateUtils.getDateTime());
@@ -225,9 +225,9 @@ public class MtWebSocketServer {
             if(session!=null){
                 session.getBasicRemote().sendText(JSONObject.toJSONString(baseBuilder));
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             //判断发送次数
-            if(baseBuilder.getPustNumber()==1){
+            if(baseBuilder.getPustNumber()==null){
                 baseBuilder.setPustNumber(0);
             }
             String keyStr=baseBuilder.getReceiveToken()+baseBuilder.getSerialNumber();

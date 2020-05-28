@@ -11,6 +11,8 @@ public interface TypeConstant {
     String REQUEST_AN_TYPE = "an";
     /*请求类型: h5*/
     String REQUEST_H5_TYPE = "h5";
+    /*请求类型: 后台通过http接口请求发送消息*/
+    String REQUEST_SERVICE_TYPE = "service";
     /*客户端心跳*/
     String REQUEST_PING_TYPE="ping";
     /*客户端回应信息*/
