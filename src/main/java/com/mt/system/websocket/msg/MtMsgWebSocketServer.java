@@ -158,7 +158,6 @@ public class MtMsgWebSocketServer {
             throw e;
         }
     }
-
     /**
      * 接收到客户端信息-服务端推消息给用户
      * @param reqEntity
