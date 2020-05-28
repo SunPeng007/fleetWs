@@ -191,7 +191,7 @@ public class MtMsgWebSocketServer {
                         //不是后台通过http接口调用。需要告诉发送者，服务端已经收到消息。
                         if(!reqEntity.getRequestType().equals(TypeConstant.REQUEST_SERVICE_TYPE)){
                             //给当前连接发消息提示成功
-                            BaseBuilder<PushMessage> resultUs=pushNews.clone();
+                            BaseBuilder<PushMessage> resultUs=reqEntity.clone();
                             resultUs.setMsg("响应客户端消息!");
                             resultUs.setResponseType(TypeConstant.RESPONSE_SUCCESS_TYPE);//设置响应类型
                             sendMsg(mtSes.getSession(),companyId,resultUs);
