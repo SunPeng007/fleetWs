@@ -26,31 +26,36 @@ public class CleanPushRunnable implements Runnable{
     public void run() {
         while (true) {
             try{
-                ConcurrentHashMap<String,ConcurrentHashMap<String,ConcurrentHashMap<String,BaseBuilder<SynergyGroupRecord>>>> mtPushMap = MtContainerUtil.getMtPushMap();
                 /*判断是否需要重发*/
-                Iterator<String> comIter = mtPushMap.keySet().iterator();
-                while(comIter.hasNext()) {
-                    String companyId = comIter.next();//公司id
+                ConcurrentHashMap<String,ConcurrentHashMap<String,ConcurrentHashMap<String,BaseBuilder<SynergyGroupRecord>>>> mtPushMap = MtContainerUtil.getMtPushMap();
+                //遍历所有-公司
+                Iterator<String> companyIter = mtPushMap.keySet().iterator();
+                while(companyIter.hasNext()) {
+                    String companyId = companyIter.next();//公司id
                     ConcurrentHashMap<String,ConcurrentHashMap<String,BaseBuilder<SynergyGroupRecord>>> groupSession=mtPushMap.get(companyId);
+                    //遍历所有-群
                     Iterator<String> groupIter = groupSession.keySet().iterator();
                     while(groupIter.hasNext()) {
                         String groupId = groupIter.next();//群id
                         ConcurrentHashMap<String,BaseBuilder<SynergyGroupRecord>> contSession =groupSession.get(groupId);
-                        for (BaseBuilder<SynergyGroupRecord> baseBuilder : contSession.values()) {
+                        //遍历所有-发送消息
+                        Iterator<String> pushIter = contSession.keySet().iterator();
+                        while(pushIter.hasNext()) {
+                            String key = pushIter.next();//key
+                            BaseBuilder<SynergyGroupRecord> baseBuilder =contSession.get(key);
                             String token = baseBuilder.getReceiveToken();//token
                             MtSession mtSession=MtContainerUtil.getMtSessionMap(companyId,groupId,token);
                             if(mtSession!=null){
                                 Session session=mtSession.getSession();
-                                String keyStr=token+baseBuilder.getSerialNumber();
                                 //先判断连接是否打开
                                 if(!session.isOpen()) {
-                                    MtContainerUtil.mtPushRemove(companyId,groupId,keyStr);
+                                    MtContainerUtil.mtPushRemove(companyId,groupId,key);
                                     MtContainerUtil.mtSessionMapRemove(companyId,groupId,token);
                                     continue;
                                 }
                                 //判断重发次数是否达到上限
                                 if(baseBuilder.getPustNumber()>=PantNumberConstant.PANT_NUMBER_CODE){
-                                    MtContainerUtil.mtPushRemove(companyId,groupId,keyStr);
+                                    MtContainerUtil.mtPushRemove(companyId,groupId,key);
                                     MtContainerUtil.mtSessionMapRemove(companyId,groupId,token);
                                     continue;
                                 }
@@ -58,7 +63,7 @@ public class CleanPushRunnable implements Runnable{
                                 if(DateUtils.currentCompare(baseBuilder.getPushTime())>ConnectTimeConstant.ANSWER_TIME_CODE){
                                     baseBuilder.setPustNumber((baseBuilder.getPustNumber()+1));
                                     MtWebSocketServer.mtSendText(session,companyId,groupId,baseBuilder);
-                                    logger.info(token+"消息重发!");
+                                    logger.info("协同消息重发：" + key);
                                 }
                             }
                         }
@@ -67,7 +72,7 @@ public class CleanPushRunnable implements Runnable{
                 Thread.sleep(ConnectTimeConstant.CLOSE_PUSH_TIME_CODE);
             }catch (Exception e) {
                 e.printStackTrace();
-                logger.error("重发异常:"+e);
+                logger.error("协同消息重发异常:"+e);
             }
         }
     }

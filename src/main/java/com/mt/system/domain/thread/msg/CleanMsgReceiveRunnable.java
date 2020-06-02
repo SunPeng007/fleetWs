@@ -10,6 +10,7 @@ import com.mt.system.websocket.msg.MtMsgContainerUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Iterator;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -25,11 +26,19 @@ public class CleanMsgReceiveRunnable implements Runnable {
         while (true) {
             try{
                 ConcurrentHashMap<String,ConcurrentHashMap<String,BaseBuilder<ReceiveMessage>>> mtReceiveMap = MtMsgContainerUtil.getMtMsgReceiveMap();
-                for (ConcurrentHashMap<String,BaseBuilder<ReceiveMessage>> companyMap : mtReceiveMap.values()){
-                    for (BaseBuilder<ReceiveMessage> baseBuilder : companyMap.values()) {
+                //遍历所有公司
+                Iterator<String> companyIter = mtReceiveMap.keySet().iterator();
+                while(companyIter.hasNext()) {
+                    String companyId = companyIter.next();//公司id
+                    ConcurrentHashMap<String,BaseBuilder<ReceiveMessage>> companyMap=mtReceiveMap.get(companyId);
+                    //遍历该公司所有-接收消息
+                    Iterator<String> receiveIter = companyMap.keySet().iterator();
+                    while(receiveIter.hasNext()) {
+                        String key = receiveIter.next();//key
+                        BaseBuilder<ReceiveMessage> baseBuilder=companyMap.get(key);
                         if(DateUtils.currentCompare(baseBuilder.getPushTime())>ConnectTimeConstant.CLOSE_TIME_DATA_CODE){
-                            String token = baseBuilder.getPustToken()+baseBuilder.getSerialNumber();
-                            mtReceiveMap.remove(token);
+                            MtMsgContainerUtil.removeReceive(companyId,key);
+                            logger.info("清除接受数据：" + key);
                         }
                     }
                 }

@@ -7,6 +7,8 @@ import com.mt.system.domain.entity.im.SynergyGroupRecord;
 import com.mt.system.websocket.im.MtContainerUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Iterator;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -22,12 +24,24 @@ public class CleanReceiveRunnable implements Runnable {
         while (true) {
             try{
                 ConcurrentHashMap<String,ConcurrentHashMap<String,ConcurrentHashMap<String,BaseBuilder<SynergyGroupRecord>>>> mtReceiveMap = MtContainerUtil.getMtReceiveMap();
-                for (ConcurrentHashMap<String,ConcurrentHashMap<String,BaseBuilder<SynergyGroupRecord>>> groupSession : mtReceiveMap.values()){
-                    for (ConcurrentHashMap<String,BaseBuilder<SynergyGroupRecord>> contSession : groupSession.values()){
-                        for (BaseBuilder<SynergyGroupRecord> baseBuilder : contSession.values()) {
+                //遍历所有公司
+                Iterator<String> companyIter = mtReceiveMap.keySet().iterator();
+                while(companyIter.hasNext()) {
+                    String companyId = companyIter.next();//公司id
+                    ConcurrentHashMap<String,ConcurrentHashMap<String,BaseBuilder<SynergyGroupRecord>>> groupSession=mtReceiveMap.get(companyId);
+                    //遍历所有群
+                    Iterator<String>  groupIter = groupSession.keySet().iterator();
+                    while(groupIter.hasNext()) {
+                        String groupId = groupIter.next();//群id
+                        ConcurrentHashMap<String,BaseBuilder<SynergyGroupRecord>> contSession=groupSession.get(groupId);
+                        //遍历所有接受消息
+                        Iterator<String>  receiveIter = contSession.keySet().iterator();
+                        while(receiveIter.hasNext()) {
+                            String key = receiveIter.next();//key
+                            BaseBuilder<SynergyGroupRecord> baseBuilder = contSession.get(key);
                             if(DateUtils.currentCompare(baseBuilder.getPushTime())>ConnectTimeConstant.CLOSE_TIME_DATA_CODE){
-                                String token = baseBuilder.getPustToken()+baseBuilder.getSerialNumber();
-                                mtReceiveMap.remove(token);
+                                MtContainerUtil.mtReceiveMapRemove(companyId,groupId,key);
+                                logger.info("协同清除接受数据：" + key);
                             }
                         }
                     }
@@ -35,7 +49,7 @@ public class CleanReceiveRunnable implements Runnable {
                 Thread.sleep(ConnectTimeConstant.CLOSE_RECEIVE_TIME_CODE);
             }catch (Exception e) {
                 e.printStackTrace();
-                logger.error("清除接受数据异常:"+e);
+                logger.error("协同清除接受数据异常:"+e);
             }
         }
     }
