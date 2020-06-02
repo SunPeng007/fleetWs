@@ -8,6 +8,7 @@ import com.mt.system.domain.constant.TypeConstant;
 import com.mt.system.domain.entity.BaseBuilder;
 import com.mt.system.domain.entity.msg.PushMessage;
 import com.mt.system.domain.entity.msg.ReceiveMessage;
+import com.mt.system.domain.entity.msg.UserMessage;
 import com.mt.system.websocket.msg.MtMsgWebSocketServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,6 +17,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
+
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -41,10 +44,11 @@ public class MsgController extends BaseController {
                 if(paramMap.get("token")!=null){
                     if (paramMap != null && paramMap.get("data") != null) {
                         Map<String, Object> dataMap = (Map<String, Object>) paramMap.get("data");
-                        if (dataMap.get("companyId")!=null && dataMap.get("type") != null && dataMap.get("uid") != null && dataMap.get("pushMessage")!=null) {
+                        if (dataMap.get("companyId")!=null && dataMap.get("type") != null && dataMap.get("uid") != null && dataMap.get("msgData")!=null) {
                             String companyId=dataMap.get("companyId").toString();
                             String token=dataMap.get("type").toString()+"_"+dataMap.get("uid").toString();
                             Map<String,Object> receiveMap=(Map<String, Object>)dataMap.get("msgData");
+                            receiveMap.put("userMsgList",BeanToMapUtil.convertMapList(UserMessage.class,(List<Map<String, Object>>)receiveMap.get("userMsgList")));
                             ReceiveMessage receiveMessage = (ReceiveMessage)BeanToMapUtil.convertMap(ReceiveMessage.class,receiveMap);
                             //调用发送
                             BaseBuilder<ReceiveMessage> baseBuilder=new BaseBuilder<>();

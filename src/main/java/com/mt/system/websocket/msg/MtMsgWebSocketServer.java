@@ -181,23 +181,23 @@ public class MtMsgWebSocketServer {
                 List<String> typeList = MtMsgContainerUtil.getMtMsgTypeList();
                 for (String type:typeList){
                     String receiveToken=type+"_"+userMessage.getUid();
-                    MtSession mtSes=MtMsgContainerUtil.getSession(companyId,token);
-                    if(!receiveToken.equals(token) && mtSes!=null){
+                    MtSession mtSes=MtMsgContainerUtil.getSession(companyId,receiveToken);
+                    if(mtSes!=null && mtSes.getSession().isOpen()){
                         sendMsg(mtSes.getSession(),companyId,pushNews);
                         //记录发送消息给谁
                         BaseBuilder<PushMessage> resEntity =pushNews.clone();
                         addMtEcho(resEntity,1,token,companyId,receiveToken);
-                    }else{
-                        //不是后台通过http接口调用。需要告诉发送者，服务端已经收到消息。
-                        if(!reqEntity.getRequestType().equals(TypeConstant.REQUEST_SERVICE_TYPE)){
-                            //给当前连接发消息提示成功
-                            BaseBuilder<PushMessage> resultUs=reqEntity.clone();
-                            resultUs.setMsg("响应客户端消息!");
-                            resultUs.setResponseType(TypeConstant.RESPONSE_SUCCESS_TYPE);//设置响应类型
-                            sendMsg(mtSes.getSession(),companyId,resultUs);
-                        }
                     }
                 }
+            }
+            //不是后台通过http接口调用。需要告诉发送者，服务端已经收到消息。
+            if(!reqEntity.getRequestType().equals(TypeConstant.REQUEST_SERVICE_TYPE)){
+                MtSession mtSesssion=MtMsgContainerUtil.getSession(companyId,token);
+                //给当前连接发消息提示成功
+                BaseBuilder<PushMessage> resultUs=reqEntity.clone();
+                resultUs.setMsg("响应客户端消息!");
+                resultUs.setResponseType(TypeConstant.RESPONSE_SUCCESS_TYPE);//设置响应类型
+                sendMsg(mtSesssion.getSession(),companyId,resultUs);
             }
         }
     }
