@@ -71,7 +71,7 @@ public class MtMsgContainerUtil {
      */
     public static void removeSession(String companyId,String token){
         if(mtMsgSessionMap.get(companyId)!=null){
-            mtMsgSessionMap.get(companyId).get(token);
+            mtMsgSessionMap.get(companyId).remove(token);
         }
     }
     /**
