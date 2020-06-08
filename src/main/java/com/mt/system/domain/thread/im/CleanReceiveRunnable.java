@@ -7,7 +7,6 @@ import com.mt.system.domain.entity.im.SynergyGroupRecord;
 import com.mt.system.websocket.im.MtContainerUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -41,7 +40,6 @@ public class CleanReceiveRunnable implements Runnable {
                             BaseBuilder<SynergyGroupRecord> baseBuilder = contSession.get(key);
                             if(DateUtils.currentCompare(baseBuilder.getPushTime())>ConnectTimeConstant.CLOSE_TIME_DATA_CODE){
                                 MtContainerUtil.mtReceiveMapRemove(companyId,groupId,key);
-                                logger.info("协同清除接受数据：" + key);
                             }
                         }
                     }

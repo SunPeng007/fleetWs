@@ -63,7 +63,6 @@ public class CleanPushRunnable implements Runnable{
                                 if(DateUtils.currentCompare(baseBuilder.getPushTime())>ConnectTimeConstant.ANSWER_TIME_CODE){
                                     baseBuilder.setPustNumber((baseBuilder.getPustNumber()+1));
                                     MtWebSocketServer.mtSendText(session,companyId,groupId,baseBuilder);
-                                    logger.info("协同消息重发：" + key);
                                 }
                             }
                         }
