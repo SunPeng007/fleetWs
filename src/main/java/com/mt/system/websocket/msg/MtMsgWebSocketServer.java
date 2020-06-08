@@ -4,16 +4,12 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.TypeReference;
 import com.mt.system.common.util.DateUtils;
-import com.mt.system.common.util.JsonUtil;
 import com.mt.system.domain.constant.TypeConstant;
 import com.mt.system.domain.entity.BaseBuilder;
 import com.mt.system.domain.entity.MtSession;
-import com.mt.system.domain.entity.im.SynergyGroupRecord;
 import com.mt.system.domain.entity.msg.PushMessage;
 import com.mt.system.domain.entity.msg.ReceiveMessage;
 import com.mt.system.domain.entity.msg.UserMessage;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import javax.websocket.*;
 import javax.websocket.server.PathParam;
@@ -32,7 +28,6 @@ import java.util.List;
 @Component
 @ServerEndpoint(value = "/MtMsgWebSocket/{companyId}/{type}/{uid}")
 public class MtMsgWebSocketServer {
-    private static final Logger logger = LoggerFactory.getLogger(MtMsgWebSocketServer.class);
 
     /**
      * 连接建立成功调用的方法
@@ -46,16 +41,9 @@ public class MtMsgWebSocketServer {
     public void onOpen(Session session,
                        @PathParam("companyId")String companyId,
                        @PathParam("type") String type,
-                       @PathParam("uid") String uid)throws Exception {
-        try{
-            String token=type+"_"+uid;
-            MtMsgContainerUtil.putSession(companyId,token,session);
-            logger.info("连接成功调用!");
-        }catch (Exception e){
-            e.printStackTrace();
-            logger.error("连接发生异常:"+e.getMessage(),e);
-            throw e;
-        }
+                       @PathParam("uid") String uid){
+        String token=type+"_"+uid;
+        MtMsgContainerUtil.putSession(companyId,token,session);
     }
     /**
      * 连接关闭调用的方法
@@ -69,16 +57,9 @@ public class MtMsgWebSocketServer {
     public void onClose(Session session,
                         @PathParam("companyId")String companyId,
                         @PathParam("type") String type,
-                        @PathParam("uid") String uid)throws Exception {
-        try{
-            String token=type+"_"+uid;
-            MtMsgContainerUtil.removeSession(companyId,token);
-            logger.info("连接关闭调用!");
-        }catch (Exception e){
-            e.printStackTrace();
-            logger.error("连接关闭发生异常:"+e.getMessage(),e);
-            throw e;
-        }
+                        @PathParam("uid") String uid){
+        String token=type+"_"+uid;
+        MtMsgContainerUtil.removeSession(companyId,token);
     }
     /**
      * 发生错误时调用
@@ -93,16 +74,9 @@ public class MtMsgWebSocketServer {
     public void onError(Session session, Throwable error,
                         @PathParam("companyId")String companyId,
                         @PathParam("type") String type,
-                        @PathParam("uid") String uid) throws Exception{
-        try{
-            String token=type+"_"+uid;
-            MtMsgContainerUtil.removeSession(companyId,token);
-            logger.info("发生错误时调用!"+error.getMessage());
-        }catch (Exception e){
-            e.printStackTrace();
-            logger.error("发生错误时发生异常:"+e.getMessage(),e);
-            throw e;
-        }
+                        @PathParam("uid") String uid){
+        String token=type+"_"+uid;
+        MtMsgContainerUtil.removeSession(companyId,token);
     }
     /**
      * 收到客户端消息后调用的方法
@@ -118,44 +92,37 @@ public class MtMsgWebSocketServer {
                           @PathParam("companyId")String companyId,
                           @PathParam("type") String type,
                           @PathParam("uid") String uid)throws Exception {
-        try {
-            String token=type+"_"+uid;
-            logger.info("收到客户端消息!");
-            //更新当前连接时间
-            MtSession mtSession = MtMsgContainerUtil.getSession(companyId,token);
-            if(mtSession!=null){
-                mtSession.setConnectTime(DateUtils.currentTimeMilli());
-            }else{
-                MtMsgContainerUtil.putSession(companyId,token,session);
+        String token=type+"_"+uid;
+        //更新当前连接时间
+        MtSession mtSession = MtMsgContainerUtil.getSession(companyId,token);
+        if(mtSession!=null){
+            mtSession.setConnectTime(DateUtils.currentTimeMilli());
+        }else{
+            MtMsgContainerUtil.putSession(companyId,token,session);
+        }
+        //接收数据，-- 调用企业站点接口添加记录
+        BaseBuilder<ReceiveMessage> reqEntity = JSON.parseObject(message, new TypeReference<BaseBuilder<ReceiveMessage>>(){});
+        //key
+        String keyStr=token+reqEntity.getSerialNumber();
+        //判断回应类型
+        if(TypeConstant.REQUEST_PING_TYPE.equals(reqEntity.getRequestType())){
+            //ping-客户端心跳，不做任何操作
+        }else if(TypeConstant.REQUEST_RESPONSE_TYPE.equals(reqEntity.getRequestType())){
+            //服务器发送消息，客户端回应
+            //移除-服务器发送消息
+            MtMsgContainerUtil.removePush(companyId,keyStr);
+        }else{
+            //客户端向服务端发送消息
+            //判断该消息是否接收过
+            BaseBuilder<ReceiveMessage> builder = MtMsgContainerUtil.getReceive(companyId,keyStr);
+            if(builder==null){
+                reqEntity.setPushTime(DateUtils.currentTimeMilli());
+                reqEntity.setPustToken(token);//发送人token
+                //添加接收消息
+                MtMsgContainerUtil.putReceive(companyId,keyStr,reqEntity);
+                /*接收到客户端信息-服务端推消息给用户*/
+                servicePushUser(reqEntity,companyId,token);
             }
-            //接收数据，-- 调用企业站点接口添加记录
-            BaseBuilder<ReceiveMessage> reqEntity = JSON.parseObject(message, new TypeReference<BaseBuilder<ReceiveMessage>>(){});
-            //key
-            String keyStr=token+reqEntity.getSerialNumber();
-            //判断回应类型
-            if(TypeConstant.REQUEST_PING_TYPE.equals(reqEntity.getRequestType())){
-                //ping-客户端心跳，不做任何操作
-            }else if(TypeConstant.REQUEST_RESPONSE_TYPE.equals(reqEntity.getRequestType())){
-                //服务器发送消息，客户端回应
-                //移除-服务器发送消息
-                MtMsgContainerUtil.removePush(companyId,keyStr);
-            }else{
-                //客户端向服务端发送消息
-                //判断该消息是否接收过
-                BaseBuilder<ReceiveMessage> builder = MtMsgContainerUtil.getReceive(companyId,keyStr);
-                if(builder==null){
-                    reqEntity.setPushTime(DateUtils.currentTimeMilli());
-                    reqEntity.setPustToken(token);//发送人token
-                    //添加接收消息
-                    MtMsgContainerUtil.putReceive(companyId,keyStr,reqEntity);
-                    /*接收到客户端信息-服务端推消息给用户*/
-                    servicePushUser(reqEntity,companyId,token);
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            logger.error("收到客户端消息后发生异常:" +e.getMessage(),e);
-            throw e;
         }
     }
     /**
@@ -234,8 +201,6 @@ public class MtMsgWebSocketServer {
             }
             String keyStr=baseBuilder.getReceiveToken()+baseBuilder.getSerialNumber();
             MtMsgContainerUtil.putPush(companyId,keyStr,baseBuilder);
-            e.printStackTrace();
-            logger.error("发送消息发生异常："+e.getMessage(),e);
         }
     }
 

@@ -6,7 +6,6 @@ import com.mt.system.domain.entity.MtSession;
 import com.mt.system.websocket.im.MtContainerUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -41,7 +40,6 @@ public class CleanSessionRunnable implements Runnable{
                             if (DateUtils.currentCompare(mtSession.getConnectTime()) > ConnectTimeConstant.EFFECTIVE_TIME_CODE) {
                                 if (!mtSession.getSession().isOpen()) {//连接是否打开
                                     MtContainerUtil.mtSessionMapRemove(companyId,groupId,key);
-                                    logger.info("协同清除连接：" + key);
                                 }
                             }
                         }

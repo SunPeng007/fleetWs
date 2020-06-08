@@ -61,7 +61,6 @@ public class BatchMsgController extends BaseController {
      * @param pushList
      */
     private void  cleanPushData(String companyId,String token,List<Map<String,String>> pushList){
-        logger.info("清除发送（客户端）响应");
         if (pushList == null || pushList.size() <= 0) {
             return;
         }
@@ -76,7 +75,6 @@ public class BatchMsgController extends BaseController {
      * @param receiveList
      */
     private void cleanReceiveData(String companyId,String token,List<Map<String,String>> receiveList){
-        logger.info("清除响应（客户端）响应");
         if(receiveList==null || receiveList.size()<=0) {
             return;
         }

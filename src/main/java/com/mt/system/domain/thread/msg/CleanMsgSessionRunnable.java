@@ -2,13 +2,10 @@ package com.mt.system.domain.thread.msg;
 
 import com.mt.system.common.util.DateUtils;
 import com.mt.system.domain.constant.ConnectTimeConstant;
-import com.mt.system.domain.entity.BaseBuilder;
 import com.mt.system.domain.entity.MtSession;
-import com.mt.system.domain.entity.msg.PushMessage;
 import com.mt.system.websocket.msg.MtMsgContainerUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -38,7 +35,6 @@ public class CleanMsgSessionRunnable implements Runnable{
                         if (DateUtils.currentCompare(mtSession.getConnectTime()) > ConnectTimeConstant.EFFECTIVE_TIME_CODE) {
                             if (!mtSession.getSession().isOpen()) {//连接是否打开
                                 MtMsgContainerUtil.removeSession(companyId, token);
-                                logger.info("清除消息连接：" + token);
                             }
                         }
                     }

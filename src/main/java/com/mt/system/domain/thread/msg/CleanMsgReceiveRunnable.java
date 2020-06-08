@@ -3,13 +3,10 @@ package com.mt.system.domain.thread.msg;
 import com.mt.system.common.util.DateUtils;
 import com.mt.system.domain.constant.ConnectTimeConstant;
 import com.mt.system.domain.entity.BaseBuilder;
-import com.mt.system.domain.entity.im.SynergyGroupRecord;
 import com.mt.system.domain.entity.msg.ReceiveMessage;
-import com.mt.system.websocket.im.MtContainerUtil;
 import com.mt.system.websocket.msg.MtMsgContainerUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -38,7 +35,6 @@ public class CleanMsgReceiveRunnable implements Runnable {
                         BaseBuilder<ReceiveMessage> baseBuilder=companyMap.get(key);
                         if(DateUtils.currentCompare(baseBuilder.getPushTime())>ConnectTimeConstant.CLOSE_TIME_DATA_CODE){
                             MtMsgContainerUtil.removeReceive(companyId,key);
-                            logger.info("清除接受数据：" + key);
                         }
                     }
                 }
