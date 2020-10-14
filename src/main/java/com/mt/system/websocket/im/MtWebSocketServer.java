@@ -148,20 +148,23 @@ public class MtWebSocketServer {
         BaseBuilder<SynergyGroupRecord> pushNews = new BaseBuilder(uuid,"服务器推送消息!",serEntity);
         pushNews.setResponseType(TypeConstant.RESPONSE_PUSH_TYPE); //设置响应类型
         pushNews.setPustNumber(1);//发送次数
-        Integer timeStamp=Integer.valueOf(serEntity.getSendTime());
-        serEntity.setSendTime(DateUtils.timestampToString(timeStamp,"yyyy-MM-dd HH:mm:ss"));
         /*群发消息*/
         ConcurrentHashMap<String,MtSession> mtSesMap = MtContainerUtil.getMtSessionMap(companyId,groupId);
         if(mtSesMap!=null){
             Iterator<String> iter = mtSesMap.keySet().iterator();
             while(iter.hasNext()){
-                String key=iter.next();
-                MtSession mtSes =MtContainerUtil.getMtSessionMap(companyId,groupId,key);
-                if(!key.equals(token) && mtSes!=null){
+                String tempToken=iter.next();
+                MtSession mtSes =MtContainerUtil.getMtSessionMap(companyId,groupId,tempToken);
+                if(!tempToken.equals(token) && mtSes!=null){
+                    //发送消息
                     mtSendText(mtSes.getSession(),companyId,groupId,pushNews);
                     //记录发送消息给谁
                     BaseBuilder<SynergyGroupRecord> resEntity =pushNews.clone();
-                    addMtEcho(resEntity,1,token,companyId,groupId,key);
+                    resEntity.setPustToken(token);
+                    resEntity.setReceiveToken(tempToken);
+                    resEntity.setPushTime(DateUtils.currentTimeMilli());
+                    String keyStr=tempToken+resEntity.getSerialNumber();
+                    MtContainerUtil.mtPushMapPut(companyId,groupId,keyStr,resEntity);
                 }else{
                     //给当前连接发消息提示成功
                     BaseBuilder<SynergyGroupRecord> resultUs=reqEntity.clone();
@@ -172,20 +175,37 @@ public class MtWebSocketServer {
             }
         }
     }
+
     /**
-     * 记录发送消息给谁
-     * @param resEntity
-     * @param pustNumber
-     * @param pustToken
-     * @param receiveToken
+     * 接收到后端信息-服务端推消息给用户
+     * @param pushEntity
+     * @param companyId
+     * @param token
+     * @param groupId
+     * @throws Exception
      */
-    private void addMtEcho(BaseBuilder<SynergyGroupRecord> resEntity,int pustNumber,String pustToken,String companyId,String groupId,String receiveToken){
-        resEntity.setPustNumber(pustNumber);
-        resEntity.setPustToken(pustToken);
-        resEntity.setReceiveToken(receiveToken);
-        resEntity.setPushTime(DateUtils.currentTimeMilli());
-        String keyStr=receiveToken+resEntity.getSerialNumber();
-        MtContainerUtil.mtPushMapPut(companyId,groupId,keyStr,resEntity);
+    public static void pushUser(BaseBuilder<SynergyGroupRecord> pushEntity,String companyId,String groupId,String token)throws Exception{
+        /*群发消息*/
+        ConcurrentHashMap<String,MtSession> mtSesMap = MtContainerUtil.getMtSessionMap(companyId,groupId);
+        if(mtSesMap!=null){
+            Iterator<String> iter = mtSesMap.keySet().iterator();
+            while(iter.hasNext()){
+                String tempToken=iter.next();
+                //不发给自己
+                if(!tempToken.equals(token)){
+                    MtSession mtSes =MtContainerUtil.getMtSessionMap(companyId,groupId,tempToken);
+                    //发送
+                    mtSendText(mtSes.getSession(),companyId,groupId,pushEntity);
+                    //记录发送消息给谁
+                    BaseBuilder<SynergyGroupRecord> resEntity =pushEntity.clone();
+                    resEntity.setPustToken(token);
+                    resEntity.setReceiveToken(tempToken);
+                    resEntity.setPushTime(DateUtils.currentTimeMilli());
+                    String keyStr=tempToken+resEntity.getSerialNumber();
+                    MtContainerUtil.mtPushMapPut(companyId,groupId,keyStr,resEntity);
+                }
+            }
+        }
     }
     /**
      * 发送消息
