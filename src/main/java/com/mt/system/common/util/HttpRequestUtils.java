@@ -27,7 +27,16 @@ public class HttpRequestUtils {
         reqParam.put("paramsData", RSAUtils4Client.encryptionDataPacket(dataMap, "", Long.valueOf(DateUtils.currentTimeMillis())));
         return reqParam;
     }
-
+    /**
+     * bu参数加密
+     * @param dataMap
+     * @return
+     */
+    public static Map<String,Object> getBuEncryptionParam(Map<String,Object> dataMap,String token){
+        Map<String, Object> reqParam = new HashMap<>();
+        reqParam.put("paramsData", RSAUtils4Client.encryptionDataPacket(dataMap, token, Long.valueOf(DateUtils.currentTimeMillis())));
+        return reqParam;
+    }
     /**
      * bu参数解密
      * @param dataMap
