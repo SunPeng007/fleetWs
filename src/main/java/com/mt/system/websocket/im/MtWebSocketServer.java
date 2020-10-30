@@ -135,7 +135,7 @@ public class MtWebSocketServer {
             webUrl="http://"+webUrl;
         }
         String url=webUrl.trim()+AsyncUrlConstant.ADD_GROUP_RECORD_URL;//请求接口地址
-        Map<String,Object> resMap = HttpRequestUtils.httpPost(url,HttpRequestUtils.getBuEncryptionParam(BeanToMapUtil.convertBean(reqEntity.getData())));
+        Map<String,Object> resMap = HttpRequestUtils.httpPost(url,HttpRequestUtils.getBuEncryptionParam(BeanToMapUtil.convertBean(reqEntity.getData()),token));
         //响应结果
         Map<String,Object> resParam=HttpRequestUtils.getBuDecryptionParam(resMap);
         if(!"000000".equals(resParam.get("code").toString())) {
