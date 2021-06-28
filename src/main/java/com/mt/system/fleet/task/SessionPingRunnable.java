@@ -24,12 +24,11 @@ public class SessionPingRunnable implements Runnable {
                 fSession = entry.getValue();
                 if (fSession == null || (DateUtils.currentTimeMilli() - fSession.getLastPingTime() > REMOVE_TIME)) {
                     MsgServer.sessionMap.remove(entry.getKey());
-                    // MsgServer.onlineCount.decrementAndGet();
                 }
             }
             try {
                 Thread.sleep(SLEEP_TIME);
-                System.out.println("线程执行完毕，当前连接：" + MsgServer.sessionMap.size());
+                // System.out.println("线程执行完毕，当前连接：" + MsgServer.sessionMap);
             } catch (InterruptedException e) {
                 e.printStackTrace();
                 logger.error("连接清除线程异常:" + e);

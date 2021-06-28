@@ -11,11 +11,29 @@ import org.springframework.stereotype.Component;
 @PropertySource(value = "config/fleet.properties") // @PropertySource来指定自定义的资源目录
 public class FleetProperties {
 
+    private String apiFleetAdmin;
+    private String proxy;
     private String apiGuangZhou;
     private String anAccessId;
     private String anSecretKey;
     private String iosAccessId;
     private String iosSecretKey;
+
+    public String getProxy() {
+        return proxy;
+    }
+
+    public void setProxy(String proxy) {
+        this.proxy = proxy;
+    }
+
+    public String getApiFleetAdmin() {
+        return apiFleetAdmin;
+    }
+
+    public void setApiFleetAdmin(String apiFleetAdmin) {
+        this.apiFleetAdmin = apiFleetAdmin;
+    }
 
     public String getApiGuangZhou() {
         return apiGuangZhou;
@@ -59,8 +77,9 @@ public class FleetProperties {
 
     @Override
     public String toString() {
-        return "FleetProperties [apiGuangZhou=" + apiGuangZhou + ", anAccessId=" + anAccessId + ", anSecretKey="
-            + anSecretKey + ", iosAccessId=" + iosAccessId + ", iosSecretKey=" + iosSecretKey + "]";
+        return "FleetProperties [apiFleetAdmin=" + apiFleetAdmin + ", proxy=" + proxy + ", apiGuangZhou=" + apiGuangZhou
+            + ", anAccessId=" + anAccessId + ", anSecretKey=" + anSecretKey + ", iosAccessId=" + iosAccessId
+            + ", iosSecretKey=" + iosSecretKey + "]";
     }
 
 }

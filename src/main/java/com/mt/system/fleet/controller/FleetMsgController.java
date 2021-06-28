@@ -35,11 +35,12 @@ public class FleetMsgController {
     private XingeHttpClient xingeHttpClient;
 
     @PostMapping("/pushAll")
-    public ApiResponse pushAll(@RequestBody Map<String, String> map) {
+    public ApiResponse pushAll(@RequestBody Map<String, Object> map) {
         // Map<String, Object> map = WebUtils.getParametersStartingWith(request, "");
-        String msgTitle = map.get("msgTitle");
-        String msgContext = map.get("msgContext");
-        String uid = map.get("uid");
+        String msgTitle = (String)map.get("msgTitle");
+        String msgContext = (String)map.get("msgContext");
+        String uid = (String)map.get("uid");
+        String uName = (String)map.get("uName");
         if (WebCheckUtil.illParams(msgContext, msgTitle, uid)) {
             logger.error(CommonErrors.ERR_WEB_PARAM_IS_NULL.getErrorMsg());
             return new ApiResponse(CommonErrors.ERR_WEB_PARAM_IS_NULL);
@@ -47,14 +48,16 @@ public class FleetMsgController {
         MessageType msgType;
         Environment environment;
         try {
-            msgType = MessageType.valueOf(map.get("msgType"));
-            environment = Environment.valueOf(map.get("environment"));
+            msgType = MessageType.valueOf((String)map.get("msgType"));
+            environment = Environment.valueOf((String)map.get("environment"));
         } catch (Exception e) {
             logger.error(CommonErrors.ERR_WEB_PARAM_INVALID.getErrorMsg());
             return new ApiResponse(CommonErrors.ERR_WEB_PARAM_INVALID);
         }
         Msg msg = new Msg();
-        msg.setUid(uid);
+        msg.setuName(uName);
+        msg.setUid(MsgServer.SITE_ADMIN_CODE + MsgServer.KEY_CONNECTOR + uid);
+        msg.setMsgTitle(msgTitle);
         msg.setMsgContext(msgContext);
         msg.setReqType(RequestTypeEnum.NOTIFY);
         // PC web socket
@@ -66,11 +69,14 @@ public class FleetMsgController {
             return new ApiResponse(msg.getSendCount());
         }
         if (!an && !ios) {
+            logger.error(XingeErrors.ERR_AN_IOS_PUT_ALL.getErrorMsg());
             return new ApiResponse(XingeErrors.ERR_AN_IOS_PUT_ALL);
         }
         if (an) {
+            logger.error(XingeErrors.ERR_AN_PUT_ALL.getErrorMsg());
             return new ApiResponse(XingeErrors.ERR_AN_PUT_ALL);
         }
+        logger.error(XingeErrors.ERR_IOS_PUT_ALL.getErrorMsg());
         return new ApiResponse(XingeErrors.ERR_IOS_PUT_ALL);
     }
 
@@ -81,10 +87,12 @@ public class FleetMsgController {
      * @return pc消息成功数
      */
     @PostMapping("/pushToken")
-    public ApiResponse pushToken(@RequestBody Map<String, String> map) {
-        String msgTitle = map.get("msgTitle");
-        String msgContext = map.get("msgContext");
-        String uid = map.get("uid");
+    public ApiResponse pushToken(@RequestBody Map<String, Object> map) {
+        String msgTitle = (String)map.get("msgTitle");
+        String msgContext = (String)map.get("msgContext");
+        String uid = (String)map.get("uid");
+        String uName = (String)map.get("uName");
+        String companyId = (String)map.get("companyId");
         List<String> uidList = JSON.parseArray(JSON.toJSONString(map.get("uidList")), String.class);
         List<String> tokenList = JSON.parseArray(JSON.toJSONString(map.get("tokenList")), String.class);
         if (WebCheckUtil.illParams(msgContext, msgTitle, uid, tokenList, uidList)) {
@@ -94,31 +102,37 @@ public class FleetMsgController {
         MessageType msgType;
         Platform tokenType;
         try {
-            msgType = MessageType.valueOf(map.get("msgType"));
-            tokenType = Platform.valueOf(map.get("tokenType"));
+            msgType = MessageType.valueOf((String)map.get("msgType"));
+            tokenType = Platform.valueOf((String)map.get("tokenType"));
         } catch (Exception e) {
             logger.error(CommonErrors.ERR_WEB_PARAM_IS_NULL.getErrorMsg());
             return new ApiResponse(CommonErrors.ERR_WEB_PARAM_IS_NULL);
         }
         Environment environment;
-        // Android ios xinge
+        // Android
         if (tokenType.equals(Platform.ios)) {
             try {
-                environment = Environment.valueOf(map.get("environment"));
+                environment = Environment.valueOf((String)map.get("environment"));
             } catch (Exception e) {
                 logger.error(CommonErrors.ERR_WEB_PARAM_IS_NULL.getErrorMsg());
                 return new ApiResponse(CommonErrors.ERR_WEB_PARAM_IS_NULL);
             }
             xingeHttpClient.pushTokenListIos((ArrayList<String>)tokenList, msgContext, msgTitle, msgType, environment);
         }
+        // ios
         if (tokenType.equals(Platform.android)) {
             xingeHttpClient.pushTokenListAn((ArrayList<String>)tokenList, msgContext, msgTitle, msgType);
         }
 
         Msg msg = new Msg();
         msg.setUid(uid);
+        msg.setuName(uName);
         msg.setMsgContext(msgContext);
         msg.setReqType(RequestTypeEnum.NOTIFY);
+
+        for (String key : uidList) {
+            key = companyId + MsgServer.KEY_CONNECTOR + key;
+        }
 
         // PC web socket
         MsgServer.notifyUserList(uidList, msg);

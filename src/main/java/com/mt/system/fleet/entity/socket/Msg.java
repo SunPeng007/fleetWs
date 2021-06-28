@@ -5,9 +5,25 @@ import com.mt.system.fleet.enums.RequestTypeEnum;
 public class Msg {
 
     private String uid;
+    private String uName;
+    private String msgTitle;
     private String msgContext;
     private RequestTypeEnum reqType;
-    private Integer sendCount;
+    private Integer sendCount = 0;
+
+    public String getMsgTitle() {
+        return msgTitle;
+    }
+
+    public void setMsgTitle(String msgTitle) {
+        this.msgTitle = msgTitle;
+    }
+
+    @Override
+    public String toString() {
+        return "Msg [uid=" + uid + ", uName=" + uName + ", msgTitle=" + msgTitle + ", msgContext=" + msgContext
+            + ", reqType=" + reqType + ", sendCount=" + sendCount + "]";
+    }
 
     public String getUid() {
         return uid;
@@ -15,6 +31,14 @@ public class Msg {
 
     public void setUid(String uid) {
         this.uid = uid;
+    }
+
+    public String getuName() {
+        return uName;
+    }
+
+    public void setuName(String uName) {
+        this.uName = uName;
     }
 
     public Integer getSendCount() {
