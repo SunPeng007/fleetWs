@@ -58,7 +58,7 @@ public class MsgServer {
         fSession.setLastPingTime(DateUtils.currentTimeMilli());
         sessionMap.put(uid, fSession);
         sessionIdMap.put(session.getId(), uid);
-        log.info("有新连接加入，当前在线人数为：{}", sessionMap.size());
+        // log.info("有新连接加入，当前在线人数为：{}", sessionMap.size());
     }
 
     /**
@@ -73,7 +73,7 @@ public class MsgServer {
         }
         sessionMap.remove(key);
         sessionIdMap.remove(session.getId());
-        log.info("有一连接关闭，当前在线人数为：{}", sessionMap.size());
+        // log.info("有一连接关闭，当前在线人数为：{}", sessionMap.size());
     }
 
     /**
@@ -107,7 +107,7 @@ public class MsgServer {
 
     public static void notifyAllUser(Msg msg) {
         if (RequestTypeEnum.NOTIFY.equals(msg.getReqType())) {
-            log.info("服务端收到管理员[{}]的消息:{}", msg.getUid(), msg.toString());
+            // log.info("服务端收到管理员[{}]的消息:{}", msg.getUid(), msg.toString());
             for (FleetSession fSession : sessionMap.values()) {
                 if (fSession != null && fSession.getSession().isOpen()) {
                     sendMessage(msg, fSession);
@@ -134,7 +134,7 @@ public class MsgServer {
         try {
             fSession.getSession().getBasicRemote().sendText(msg.getMsgTitle());
             msg.setSendCount(msg.getSendCount() + 1);
-            log.info("推送给用户{}成功", fSession.getUid());
+            // log.info("推送给用户{}成功", fSession.getUid());
         } catch (Exception e) {
             log.error("推送给用户{}失败：{}", fSession.getUid(), e);
         }
@@ -143,7 +143,7 @@ public class MsgServer {
     private static void pingMsg(FleetSession fSession) {
         try {
             fSession.getSession().getBasicRemote().sendText("PONG");
-            log.info("心跳消息：用户{}", fSession.getUid());
+            // log.info("心跳消息：用户{}", fSession.getUid());
         } catch (Exception e) {
             log.error("心跳消息失败：用户{}：{}", fSession.getUid(), e);
         }
