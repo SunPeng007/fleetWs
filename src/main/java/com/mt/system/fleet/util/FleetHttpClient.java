@@ -19,7 +19,6 @@ public class FleetHttpClient {
     private static final String API_GET_ADMIN_USER = "/getUserInfo";
 
     public Map<String, Object> getAdminUser(String sessionId) {
-        // System.err.println(fleetProperties.toString());
         String url = HttpClientUtil.getUrlApi(fleetProperties.getApiFleetAdmin(), API_GET_ADMIN_USER);
         Map<String, Object> map = new HashMap<>();
         map.put("sessionID", sessionId);
@@ -28,7 +27,7 @@ public class FleetHttpClient {
             res = HttpClientUtil.postForJson(url, map);
             ApiResponse response = json2Obj(res);
             // System.err.println(res);
-            if (response.getSuccess()) {
+            if (response != null && Boolean.TRUE.equals(response.getSuccess())) {
                 Map<String, Object> m = (Map<String, Object>)response.getData();
                 return m;
             }
