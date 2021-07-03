@@ -154,6 +154,7 @@ public class MsgServer {
             Map<?, ?> map = fleetHttpClient.getAdminUser(verifyCode);
             if (map == null) {
                 // throw new IllegalArgumentException("非法参数");
+                log.error("非法参数：{}", verifyCode);
                 return null;
             }
             uid = SITE_ADMIN_CODE + KEY_CONNECTOR + map.get("id");

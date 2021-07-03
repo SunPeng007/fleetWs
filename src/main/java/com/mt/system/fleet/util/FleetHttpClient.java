@@ -4,17 +4,17 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.mt.system.fleet.common.ApiResponse;
-import com.mt.system.fleet.common.ApplicationContextHolder;
 import com.mt.system.fleet.properties.FleetProperties;
 
 @Component
 public class FleetHttpClient {
 
-    // @Autowired
-    private FleetProperties fleetProperties = ApplicationContextHolder.getBean("fleetProperties");
+    @Autowired
+    private FleetProperties fleetProperties;
 
     private static final String API_GET_ADMIN_USER = "/getUserInfo";
 
@@ -26,7 +26,6 @@ public class FleetHttpClient {
         try {
             res = HttpClientUtil.postForJson(url, map);
             ApiResponse response = json2Obj(res);
-            // System.err.println(res);
             if (response != null && Boolean.TRUE.equals(response.getSuccess())) {
                 Map<String, Object> m = (Map<String, Object>)response.getData();
                 return m;
