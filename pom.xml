@@ -83,7 +83,7 @@
 
 	<build>
 		<!-- 打成jar包的名称 -->
-		<finalName>fleetWS</finalName>
+		<finalName>cfws</finalName>
 		<plugins>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>

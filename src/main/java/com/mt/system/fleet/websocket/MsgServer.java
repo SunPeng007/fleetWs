@@ -47,10 +47,10 @@ public class MsgServer {
         @PathParam("verifyCode") String verifyCode) {
 
         String uid = getKey(siteCode, verifyCode);
-        if (uid == null) {
-            onClose(session);
-            return;
-        }
+        // if (uid == null) {
+        // onClose(session);
+        // return;
+        // }
 
         FleetSession fSession = new FleetSession();
         fSession.setUid(uid);
@@ -87,10 +87,10 @@ public class MsgServer {
         @PathParam("verifyCode") String verifyCode, String message) {
 
         String uid = getKey(siteCode, verifyCode);
-        if (uid == null) {
-            onClose(session);
-            return;
-        }
+        // if (uid == null) {
+        // onClose(session);
+        // return;
+        // }
         if ("PING".equals(message) && sessionMap.get(uid) != null) {
             sessionMap.get(uid).setLastPingTime(DateUtils.currentTimeMilli());
             pingMsg(sessionMap.get(uid));
@@ -100,7 +100,7 @@ public class MsgServer {
 
     @OnError
     public void onError(Session session, Throwable error) {
-        session = null;
+        // session = null;
         log.error(error.toString());
         error.printStackTrace();
     }
@@ -162,8 +162,8 @@ public class MsgServer {
             // TODO 验证token 获取站点地址
             uid = siteCode + KEY_CONNECTOR + verifyCode;
         }
-        // if (uid == null)
-        // throw new IllegalArgumentException("非法参数");
+        if (uid == null)
+            throw new IllegalArgumentException("非法参数");
         return uid;
     }
 }
