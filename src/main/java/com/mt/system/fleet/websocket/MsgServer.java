@@ -33,7 +33,6 @@ public class MsgServer {
     public static final String SITE_ADMIN_CODE = "admin";
     public static final String KEY_CONNECTOR = "_";
 
-    // @Autowired
     private FleetHttpClient fleetHttpClient = (FleetHttpClient)ApplicationContextHolder.getBean("fleetHttpClient");
 
     public static ConcurrentHashMap<String, FleetSession> sessionMap = new ConcurrentHashMap<String, FleetSession>();
@@ -58,7 +57,7 @@ public class MsgServer {
         fSession.setLastPingTime(DateUtils.currentTimeMilli());
         sessionMap.put(uid, fSession);
         sessionIdMap.put(session.getId(), uid);
-        // log.info("有新连接加入，当前在线人数为：{}", sessionMap.size());
+        log.info("有新连接加入，key：{}", uid);
     }
 
     /**
@@ -68,7 +67,7 @@ public class MsgServer {
     public void onClose(Session session) {
         String key = sessionIdMap.get(session.getId());
         if (key == null) {
-            session = null;
+            // session = null;
             return;
         }
         sessionMap.remove(key);
@@ -164,7 +163,7 @@ public class MsgServer {
         }
         if (uid == null) {
             log.error("非法参数：{}", verifyCode);
-            throw new IllegalArgumentException("非法参数:");
+            // throw new IllegalArgumentException("非法参数:");
         }
         return uid;
     }

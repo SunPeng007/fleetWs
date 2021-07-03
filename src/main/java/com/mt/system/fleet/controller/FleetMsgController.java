@@ -88,11 +88,11 @@ public class FleetMsgController {
      */
     @PostMapping("/pushToken")
     public ApiResponse pushToken(@RequestBody Map<String, Object> map) {
-        String msgTitle = (String)map.get("msgTitle");
-        String msgContext = (String)map.get("msgContext");
-        String uid = (String)map.get("uid");
-        String uName = (String)map.get("uName");
-        String companyId = (String)map.get("companyId");
+        String msgTitle = String.valueOf(map.get("msgTitle"));
+        String msgContext = String.valueOf(map.get("msgContext"));
+        String uid = String.valueOf(map.get("uid"));
+        String uName = String.valueOf(map.get("uName"));
+        String companyId = String.valueOf(map.get("companyId"));
         List<String> uidList = JSON.parseArray(JSON.toJSONString(map.get("uidList")), String.class);
         List<String> tokenList = JSON.parseArray(JSON.toJSONString(map.get("tokenList")), String.class);
         if (WebCheckUtil.illParams(msgContext, msgTitle, uid, tokenList, uidList)) {
