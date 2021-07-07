@@ -15,6 +15,7 @@ import javax.websocket.server.ServerEndpoint;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Component;
 
 import com.mt.system.common.util.DateUtils;
@@ -26,6 +27,7 @@ import com.mt.system.fleet.util.FleetHttpClient;
 
 @ServerEndpoint(value = "/msgSocket/{siteCode}/{verifyCode}")
 @Component
+@DependsOn("applicationContextHolder")
 public class MsgServer {
 
     private static Logger log = LoggerFactory.getLogger(MsgServer.class);
