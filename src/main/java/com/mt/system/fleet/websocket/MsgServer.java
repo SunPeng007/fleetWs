@@ -38,7 +38,6 @@ public class MsgServer {
     private FleetHttpClient fleetHttpClient = (FleetHttpClient)ApplicationContextHolder.getBean("fleetHttpClient");
 
     public static ConcurrentHashMap<String, FleetSession> sessionMap = new ConcurrentHashMap<String, FleetSession>();
-    public static ConcurrentHashMap<String, String> sessionIdMap = new ConcurrentHashMap<String, String>();
 
     /**
      * 连接建立成功调用的方法
@@ -47,33 +46,26 @@ public class MsgServer {
     public void onOpen(Session session, @PathParam("siteCode") String siteCode,
         @PathParam("verifyCode") String verifyCode) {
 
-        String uid = getKey(siteCode, verifyCode);
-        if (uid == null) {
-            // onClose(session);
+        String key = getKeyWithVerify(siteCode, verifyCode);
+        if (key == null) {
             return;
         }
 
         FleetSession fSession = new FleetSession();
-        fSession.setUid(uid);
+        fSession.setUid(key);
         fSession.setSession(session);
         fSession.setLastPingTime(DateUtils.currentTimeMilli());
-        sessionMap.put(uid, fSession);
-        sessionIdMap.put(session.getId(), uid);
-        log.info("有新连接加入，key：{}", uid);
+        sessionMap.put(key, fSession);
+        log.info("有新连接加入，key：{}", key);
     }
 
     /**
      * 连接关闭调用的方法
      */
     @OnClose
-    public void onClose(Session session) {
-        String key = sessionIdMap.get(session.getId());
-        if (key == null) {
-            // session = null;
-            return;
-        }
-        sessionMap.remove(key);
-        sessionIdMap.remove(session.getId());
+    public void onClose(Session session, @PathParam("siteCode") String siteCode,
+        @PathParam("verifyCode") String verifyCode) {
+        sessionMap.remove(getKeyWithoutVerify(siteCode, verifyCode));
         // log.info("有一连接关闭，当前在线人数为：{}", sessionMap.size());
     }
 
@@ -87,11 +79,7 @@ public class MsgServer {
     public void onMessage(Session session, @PathParam("siteCode") String siteCode,
         @PathParam("verifyCode") String verifyCode, String message) {
 
-        String uid = getKey(siteCode, verifyCode);
-        if (uid == null) {
-            // onClose(session);
-            return;
-        }
+        String uid = getKeyWithoutVerify(siteCode, verifyCode);
         if ("PING".equals(message) && sessionMap.get(uid) != null) {
             sessionMap.get(uid).setLastPingTime(DateUtils.currentTimeMilli());
             pingMsg(sessionMap.get(uid));
@@ -101,15 +89,14 @@ public class MsgServer {
 
     @OnError
     public void onError(Session session, Throwable error) {
-        // session = null;
         log.error(error.toString());
         error.printStackTrace();
     }
 
     public static void notifyAllUser(Msg msg) {
         if (RequestTypeEnum.NOTIFY.equals(msg.getReqType())) {
-            // log.info("服务端收到管理员[{}]的消息:{}", msg.getUid(), msg.toString());
             for (FleetSession fSession : sessionMap.values()) {
+                System.out.println(fSession);
                 if (fSession != null && fSession.getSession().isOpen()) {
                     sendMessage(msg, fSession);
                 }
@@ -135,7 +122,7 @@ public class MsgServer {
         try {
             fSession.getSession().getBasicRemote().sendText(msg.getMsgTitle());
             msg.setSendCount(msg.getSendCount() + 1);
-            // log.info("推送给用户{}成功", fSession.getUid());
+            // log.info("推送消息给用户：{}", fSession.getUid());
         } catch (Exception e) {
             log.error("推送给用户{}失败：{}", fSession.getUid(), e);
         }
@@ -144,30 +131,34 @@ public class MsgServer {
     private static void pingMsg(FleetSession fSession) {
         try {
             fSession.getSession().getBasicRemote().sendText("PONG");
-            // log.info("心跳消息：用户{}", fSession.getUid());
         } catch (Exception e) {
             log.error("心跳消息失败：用户{}：{}", fSession.getUid(), e);
         }
     }
 
-    private String getKey(String siteCode, String verifyCode) throws IllegalArgumentException {
-        String uid = null;
+    private String getKeyWithoutVerify(String siteCode, String verifyCode) throws IllegalArgumentException {
+        String key = null;
+        if (Objects.equals(siteCode, SITE_ADMIN_CODE)) {
+            key = SITE_ADMIN_CODE + KEY_CONNECTOR + verifyCode;
+        } else {
+            key = siteCode + KEY_CONNECTOR + verifyCode;
+        }
+        return key;
+    }
+
+    private String getKeyWithVerify(String siteCode, String verifyCode) throws IllegalArgumentException {
+        String key = null;
         if (Objects.equals(siteCode, SITE_ADMIN_CODE)) {
             Map<?, ?> map = fleetHttpClient.getAdminUser(verifyCode);
             if (map == null) {
-                // throw new IllegalArgumentException("非法参数");
                 log.error("非法参数：{}", verifyCode);
                 return null;
             }
-            uid = SITE_ADMIN_CODE + KEY_CONNECTOR + map.get("id");
+            key = SITE_ADMIN_CODE + KEY_CONNECTOR + verifyCode;
         } else {
-            // TODO 验证token 获取站点地址
-            uid = siteCode + KEY_CONNECTOR + verifyCode;
+            // TODO 验证verifyCode 获取站点地址
+            key = siteCode + KEY_CONNECTOR + verifyCode;
         }
-        if (uid == null) {
-            log.error("非法参数：{}", verifyCode);
-            // throw new IllegalArgumentException("非法参数:");
-        }
-        return uid;
+        return key;
     }
 }
