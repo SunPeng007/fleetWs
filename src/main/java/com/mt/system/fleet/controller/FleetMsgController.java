@@ -42,7 +42,7 @@ public class FleetMsgController {
         String uid = (String)map.get("uid");
         String uName = (String)map.get("uName");
         if (WebCheckUtil.illParams(msgContext, msgTitle, uid)) {
-            logger.error(CommonErrors.ERR_WEB_PARAM_IS_NULL.getErrorMsg());
+            logger.error(CommonErrors.ERR_WEB_PARAM_IS_NULL.toString());
             return new ApiResponse(CommonErrors.ERR_WEB_PARAM_IS_NULL);
         }
         MessageType msgType;
@@ -51,7 +51,7 @@ public class FleetMsgController {
             msgType = MessageType.valueOf((String)map.get("msgType"));
             environment = Environment.valueOf((String)map.get("environment"));
         } catch (Exception e) {
-            logger.error(CommonErrors.ERR_WEB_PARAM_INVALID.getErrorMsg());
+            logger.error(CommonErrors.ERR_WEB_PARAM_INVALID.toString());
             return new ApiResponse(CommonErrors.ERR_WEB_PARAM_INVALID);
         }
         Msg msg = new Msg();
@@ -69,14 +69,14 @@ public class FleetMsgController {
             return new ApiResponse(msg.getSendCount());
         }
         if (!an && !ios) {
-            logger.error(XingeErrors.ERR_AN_IOS_PUT_ALL.getErrorMsg());
+            logger.error(XingeErrors.ERR_AN_IOS_PUT_ALL.toString());
             return new ApiResponse(XingeErrors.ERR_AN_IOS_PUT_ALL);
         }
         if (an) {
-            logger.error(XingeErrors.ERR_AN_PUT_ALL.getErrorMsg());
+            logger.error(XingeErrors.ERR_AN_PUT_ALL.toString());
             return new ApiResponse(XingeErrors.ERR_AN_PUT_ALL);
         }
-        logger.error(XingeErrors.ERR_IOS_PUT_ALL.getErrorMsg());
+        logger.error(XingeErrors.ERR_IOS_PUT_ALL.toString());
         return new ApiResponse(XingeErrors.ERR_IOS_PUT_ALL);
     }
 
@@ -96,32 +96,32 @@ public class FleetMsgController {
         List<String> uidList = JSON.parseArray(JSON.toJSONString(map.get("uidList")), String.class);
         List<String> tokenList = JSON.parseArray(JSON.toJSONString(map.get("tokenList")), String.class);
         if (WebCheckUtil.illParams(msgContext, msgTitle, uid, tokenList, uidList)) {
-            logger.error(CommonErrors.ERR_WEB_PARAM_IS_NULL.getErrorMsg());
+            logger.error(CommonErrors.ERR_WEB_PARAM_IS_NULL.toString());
             return new ApiResponse(CommonErrors.ERR_WEB_PARAM_IS_NULL);
         }
         MessageType msgType;
         Platform tokenType;
         try {
-            msgType = MessageType.valueOf((String)map.get("msgType"));
-            tokenType = Platform.valueOf((String)map.get("tokenType"));
+            msgType = MessageType.valueOf(String.valueOf(map.get("msgType")));
+            tokenType = Platform.valueOf(String.valueOf(map.get("tokenType")));
         } catch (Exception e) {
-            logger.error(CommonErrors.ERR_WEB_PARAM_IS_NULL.getErrorMsg());
+            logger.error(CommonErrors.ERR_WEB_PARAM_IS_NULL.toString());
             return new ApiResponse(CommonErrors.ERR_WEB_PARAM_IS_NULL);
         }
-        Environment environment;
         // Android
+        if (tokenType.equals(Platform.android)) {
+            xingeHttpClient.pushTokenListAn((ArrayList<String>)tokenList, msgContext, msgTitle, msgType);
+        }
+        Environment environment;
+        // ios
         if (tokenType.equals(Platform.ios)) {
             try {
-                environment = Environment.valueOf((String)map.get("environment"));
+                environment = Environment.valueOf(String.valueOf(map.get("environment")));
             } catch (Exception e) {
-                logger.error(CommonErrors.ERR_WEB_PARAM_IS_NULL.getErrorMsg());
+                logger.error(CommonErrors.ERR_WEB_PARAM_IS_NULL.toString());
                 return new ApiResponse(CommonErrors.ERR_WEB_PARAM_IS_NULL);
             }
             xingeHttpClient.pushTokenListIos((ArrayList<String>)tokenList, msgContext, msgTitle, msgType, environment);
-        }
-        // ios
-        if (tokenType.equals(Platform.android)) {
-            xingeHttpClient.pushTokenListAn((ArrayList<String>)tokenList, msgContext, msgTitle, msgType);
         }
 
         Msg msg = new Msg();

@@ -79,9 +79,7 @@ public class XingeHttpClient {
         JSONObject anRet = anXingeApp.pushApp(pushAppRequest);
         PushAppResponse an = json2Obj(anRet);
         if (an.getRet_code() != 0) {
-            logger.error(
-                XingeErrors.ERR_AN_PUT_TOKEN_LIST.getErrorCode() + XingeErrors.ERR_AN_PUT_TOKEN_LIST.getErrorMsg()
-                    + an.getRet_code() + an.getRet_code() + an.getErr_msg());
+            logger.error(XingeErrors.ERR_AN_PUT_TOKEN_LIST.toString() + an.getRet_code() + an.getErr_msg());
             return false;
         }
         return true;
@@ -100,11 +98,10 @@ public class XingeHttpClient {
         pushAppRequest.setEnvironment(environment);
         pushAppRequest.setToken_list(list);
         // 完善PushAppRequest 消息
-        JSONObject anRet = anXingeApp.pushApp(pushAppRequest);
-        PushAppResponse an = json2Obj(anRet);
-        if (an.getRet_code() != 0) {
-            logger.error(XingeErrors.ERR_IOS_PUT_TOKEN_LIST.getErrorCode()
-                + XingeErrors.ERR_IOS_PUT_TOKEN_LIST.getErrorMsg() + an.getRet_code() + an.getErr_msg());
+        JSONObject anRet = iosXingeApp.pushApp(pushAppRequest);
+        PushAppResponse ios = json2Obj(anRet);
+        if (ios.getRet_code() != 0) {
+            logger.error(XingeErrors.ERR_IOS_PUT_TOKEN_LIST.toString() + ios.getRet_code() + ios.getErr_msg());
             return false;
         }
         return true;
